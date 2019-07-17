@@ -11,7 +11,7 @@ You always need to be `using Kull.Data` to use the extension methods.
 ### Call a Stored Procedure
 
 ```C#
- using (var con = Kull.Data.DatabaseUtils.GetConnectionFromConfig("SomeConfigConnstr"))
+using (var con = Kull.Data.DatabaseUtils.GetConnectionFromConfig("SomeConfigConnstr"))
 {
     return con.CreateSPCommand("spGetSomeData")
         .AddCommandParameter("NameOfParameter", 1)
@@ -22,7 +22,7 @@ You always need to be `using Kull.Data` to use the extension methods.
 
 ### Call a Stored Procedure, but use default DataReader
 
-```
+```C#
 System.Data.Common.DbCommand cmd = con.CreateSPCommand("spGetSomeData")
                     .AddCommandParameter("NameOfParameter", 1)
                     .AddCommandParameter("NameofOtherPArameter", 2);
@@ -38,5 +38,5 @@ using(var rdr = cmd.ExecuteReader())
 ## Other Feature: WrapperDataReader and ObjectDataReader
 
 For [SQL Bulk Copy](https://docs.microsoft.com/de-de/dotnet/api/system.data.sqlclient.sqlbulkcopy?view=netframework-4.7.2) or other things it can
-be useful to pass C# Data as a DataReader. You can achieve that by using Kull.Data.DataReader.ObjectDataReader. If you need to add some columns 
-to a datareader, you can use Kull.Data.DataReader.WrappedDataReader.
+be useful to pass C# Data as a DataReader. You can achieve that by using `Kull.Data.DataReader.ObjectDataReader`. If you need to add some columns 
+to a datareader, you can use `Kull.Data.DataReader.WrappedDataReader`.
