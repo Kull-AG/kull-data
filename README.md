@@ -2,7 +2,7 @@
 
 This Library extends the .Net Standard DBA Classes like System.Data.Common.DbConnection or System.Data.Common.DbDataReader
 with some extension methods that makes them easiert to use. You can use this a very simple ORM Mapper as well, without 
-the need of a full-bown Entity Framework or a total drop-in replacement like Dapper. 
+the need of a full-bown Entity Framework. A good alternative is [Dapper](https://github.com/StackExchange/Dapper). 
 
 ## Some Examples
 
