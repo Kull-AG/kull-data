@@ -113,7 +113,7 @@ namespace Kull.Data.EFFallback
             var obj = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
             for (var vp = 0; vp < values.Count; vp += 2)
             {
-                obj[values[vp]] = values[vp + 1];
+                obj[values[vp].Trim()] = values[vp + 1];
             }
             return obj;
         }

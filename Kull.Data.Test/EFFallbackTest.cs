@@ -24,5 +24,16 @@ namespace Kull.Data.Test
             var res3 = ConnectionStringParser.ParseEF(res.ConnectionString);
             Assert.AreEqual(res3.ConnectionString, res.ConnectionString);
         }
+
+        [TestMethod]
+        public void TestNormalConnstr()
+        {
+            string conStr = "Url=https://SomeThing.api.Region.dynamics.com/XRMServices/2011/Organization.svc; Username=user@domain.com; Password=pwd;";
+            var res = ConnectionStringParser.ParseEF(conStr);
+            Assert.IsNull(res.Provider);
+            Assert.AreEqual(res.ConnectionStringData["userName"], "user@domain.com");
+            Assert.AreEqual(res.ConnectionStringData["Password"], "pwd");
+            Assert.AreEqual(res.ConnectionString, conStr);
+        }
     }
 }

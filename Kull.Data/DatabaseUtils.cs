@@ -139,7 +139,8 @@ namespace Kull.Data
         /// <summary>
         /// Simply adds a command parameter to a stored procedure. You can chain this method
         /// </summary>
-        public static DbCommand AddCommandParameter(this DbCommand cmd, string name, object? value, Type type, bool checkParameters = false) {
+        public static DbCommand AddCommandParameter(this DbCommand cmd, string name, object? value, Type type, bool checkParameters = false)
+        {
             var schemaParam = cmd.CreateParameter();
             schemaParam.Direction = ParameterDirection.Input;
             if (!name.StartsWith("@")
@@ -181,7 +182,7 @@ namespace Kull.Data
         /// </summary>
         public static DbCommand AddCommandParameter<T>(this DbCommand cmd, string name, T value, bool checkParameters = false)
         {
-            return AddCommandParameter(cmd, name, value, typeof(T), checkParameters);  
+            return AddCommandParameter(cmd, name, value, typeof(T), checkParameters);
         }
 
         /// <summary>
@@ -190,7 +191,7 @@ namespace Kull.Data
         [Obsolete("Use Datareader instead")]
         public static dba.DbDataAdapter CreateAdapter(this DbCommand cmd)
         {
-#if NETSTD
+#if NETSTD2
             if (cmd.GetType().FullName == "System.Data.SqlClient.SqlCommand")
             {
                 return (DbDataAdapter)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlDataAdapter, System.Data.SqlClient", true), cmd);
@@ -514,36 +515,87 @@ namespace Kull.Data
         }
 #endif
 
+        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string defaultProviderName)
+        {
+
+            //Parse the connection string
+            var connStrEF = EFFallback.ConnectionStringParser.ParseEF(entityFrameworkConnectionString);
+            if (connStrEF.Provider == null && defaultProviderName == null)
+            {
+                throw new ArgumentException("Must provide a correct EF Connection string");
+            }
+#if !NETSTD2
+            var factory = DbProviderFactories.GetFactory(connStrEF.Provider ?? defaultProviderName);//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
+            var connection = factory.CreateConnection();
+            connection.ConnectionString = connStrEF.ConnectionString;
+            return connection;
+#else 
+            string provider = connStrEF.Provider ?? defaultProviderName;
+            if (provider == "System.Data.SqlClient")
+            {
+                return (DbConnection)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlConnection, System.Data.SqlClient", true), connStrEF.ConnectionString);
+            }
+            else
+            {
+                throw new NotSupportedException("On .Net STD / .Net Core 2.0 currently only SQL Server is supported. Use .Net Standard 2.1 or full .Net Fx if possible");
+            }
+#endif
+
+        }
+
         /// <summary>
         /// Gets a Connection from a Entity Framework Connection String
         /// </summary>
         /// <param name="entityFrameworkConnectionString"></param>
         /// <param name="checkEf"></param>
         /// <returns></returns>
-        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, bool checkEf = false)
+        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString,
+            bool checkEf = false)
         {
-#if NETSTD
+#if NETSTD2
             if (checkEf && !entityFrameworkConnectionString.Contains("provider="))
                 return (DbConnection)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlConnection, System.Data.SqlClient", true), entityFrameworkConnectionString);
 
             var connStrEF = EFFallback.ConnectionStringParser.ParseEF(entityFrameworkConnectionString);
-            if (connStrEF.Provider == "System.Data.SqlClient.SqlClientFactory" ||connStrEF.Provider == "System.Data.SqlClient")
+            if (connStrEF.Provider == "System.Data.SqlClient.SqlClientFactory" || connStrEF.Provider == "System.Data.SqlClient")
                 return (DbConnection)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlConnection, System.Data.SqlClient", true), connStrEF.ConnectionString);
             throw new NotSupportedException("Connection Type not supported");
 #else
-
-            if (checkEf && !entityFrameworkConnectionString.Contains("provider="))
-                return new System.Data.SqlClient.SqlConnection(entityFrameworkConnectionString);
-
-
-            //Parse the connection string
-            var connStrEF = EFFallback.ConnectionStringParser.ParseEF(entityFrameworkConnectionString);
-
-            var factory = DbProviderFactories.GetFactory(connStrEF.Provider);//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
-            var connection = factory.CreateConnection();
-            connection.ConnectionString = connStrEF.ConnectionString;
-            return connection;
+            string defaultProvider = "System.Data.SqlClient";
+            return GetConnectionFromEFString(entityFrameworkConnectionString, checkEf ? defaultProvider : null);
 #endif
+        }
+
+        /// <summary>
+        /// Reads a connection string for environment variables. Supported are:
+        /// - The name of the connection itself
+        /// - SQLCONNSTR_ / SQLAZURECONNSTR_ for MSSQL
+        /// - MYSQLCONNSTR_ for Mysql
+        /// - PostgreSQLCONNSTR_ for PostgreSQL
+        /// </summary>
+        /// <param name="configName"></param>
+        /// <returns></returns>
+        public static DbConnection GetConnectionFromEnvironment(string configName)
+        {
+            var nameTypeMap = new Dictionary<string, string>()
+           {
+               { "", "System.Data.SqlClient" },
+               { "SQLCONNSTR_", "System.Data.SqlClient"},
+               { "SQLAZURECONNSTR_", "System.Data.SqlClient"},
+               { "MYSQLCONNSTR_", "MySql.Data.MySqlClient"},
+               { "PostgreSQLCONNSTR_", "Npgsql"},
+               { "CUSTOMCONNSTR_", "System.Data.SqlClient"}
+            };
+            foreach (var item in nameTypeMap)
+            {
+                string val = Environment.GetEnvironmentVariable(item.Key + configName);
+                if (val != null)
+                {
+                    return GetConnectionFromEFString(val, item.Value);
+                }
+            }
+
+            throw new ArgumentException("Cannot find setting " + configName);
         }
 
 #if !NETSTD
@@ -564,7 +616,7 @@ namespace Kull.Data
             {
                 return GetConnectionFromEFString(System.Configuration.ConfigurationManager.AppSettings[configName], true);
             }
-            throw new ArgumentException("Cannot find setting " + configName);
+            return GetConnectionFromEnvironment(configName);
         }
 #else
         /// <summary>
@@ -579,22 +631,12 @@ namespace Kull.Data
                 .SetBasePath(System.IO.Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, false);
 
-            
 
             var Configuration = builder.Build();
             var value = Configuration["ConnectionStrings:" + configName];
             if (string.IsNullOrEmpty(value))
             {
-                string envValue = Environment.GetEnvironmentVariable(configName)
-                        ?? Environment.GetEnvironmentVariable("SQLCONNSTR_" + configName)
-                        ?? Environment.GetEnvironmentVariable("SQLAZURECONNSTR_" + configName)
-                        ?? Environment.GetEnvironmentVariable("MYSQLCONNSTR_" + configName)
-                        ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_" + configName);
-                if(!string.IsNullOrEmpty(envValue))
-                {
-                    return GetConnectionFromEFString(envValue, true);
-                }
-                throw new ArgumentException("Cannot find setting " + configName);
+                return GetConnectionFromEnvironment(configName);
             }
             return GetConnectionFromEFString(value, true);
         }
