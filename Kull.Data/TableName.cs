@@ -123,7 +123,7 @@ namespace Kull.Data
             List<char> curPart = new List<char>();
             bool openQuote = false;
             bool openBracket = false;
-            foreach (char c in str)
+            foreach (char c in str!)
             {
                 if (c == '"')
                 {

@@ -515,7 +515,7 @@ namespace Kull.Data
         }
 #endif
 
-        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string defaultProviderName)
+        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string? defaultProviderName)
         {
 
             //Parse the connection string
@@ -530,7 +530,7 @@ namespace Kull.Data
             connection.ConnectionString = connStrEF.ConnectionString;
             return connection;
 #else 
-            string provider = connStrEF.Provider ?? defaultProviderName;
+            string? provider = connStrEF.Provider ?? defaultProviderName;
             if (provider == "System.Data.SqlClient")
             {
                 return (DbConnection)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlConnection, System.Data.SqlClient", true), connStrEF.ConnectionString);

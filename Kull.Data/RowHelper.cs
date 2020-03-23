@@ -376,7 +376,7 @@ namespace Kull.Data
         /// <summary>
         /// Gets an nullable int field. Returns null if the column does not exist
         /// </summary>
-        /// <param name="fieldName"></param>
+        /// <param name="fieldIndex"></param>
         /// <returns></returns>
         public int? GetNIntFieldValue(int fieldIndex)
         {
@@ -392,12 +392,14 @@ namespace Kull.Data
             else
                 return null;
         }
+
+
         public int? GetNIntFieldValue(string columnName) => GetNIntFieldValue(GetOrdinal(columnName));
 
         /// <summary>
         /// Gets a Guid Col. Returns null if the field does not exists
         /// </summary>
-        /// <param name="fieldName">The field name</param>
+        /// <param name="fieldIndex">The field index</param>
         /// <returns></returns>
         public Guid? GetNGuidFieldValue(int fieldIndex)
         {
@@ -422,7 +424,7 @@ namespace Kull.Data
         /// <summary>
         /// Returns a long value, null if column does not exist
         /// </summary>
-        /// <param name="fieldName">The name of the column</param>
+        /// <param name="fieldIndex">The index of the column</param>
         /// <returns></returns>
         public long? GetNLongFieldValue(int fieldIndex)
         {
@@ -462,7 +464,9 @@ namespace Kull.Data
             }
             else
             {
-                return _row.Table.Columns.IndexOf(columnName);
+#pragma warning disable CS0618 // Type or member is obsolete
+                return _row!.Table.Columns.IndexOf(columnName);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -514,7 +518,7 @@ namespace Kull.Data
         /// <summary>
         /// Returns a double? value or null if the column does not exist
         /// </summary>
-        /// <param name="fieldName"></param>
+        /// <param name="fieldIndex"></param>
         /// <returns></returns>
         public double? GetNDoubleFieldValue(int fieldIndex)
         {
@@ -616,6 +620,10 @@ namespace Kull.Data
                 return i;
             if (vl is Int64 l)
                 return (int)l;
+            if (vl == DBNull.Value || vl == null)
+            {
+                throw new ArgumentNullException($"Field with index {fieldIndex} may not be null");
+            }
             string toParse = vl.ToString();
             return int.Parse(toParse);
         }
@@ -714,7 +722,7 @@ namespace Kull.Data
         /// <summary>
         /// Gets a boolean value
         /// </summary>
-        /// <param name="fieldName"></param>
+        /// <param name="fieldIndex"></param>
         /// <returns></returns>
         public bool? GetNBoolValue(int fieldIndex)
         {
@@ -733,7 +741,7 @@ namespace Kull.Data
         /// <summary>
         /// Gets the TimeZoneInfo from a Field. Can be an old one as well (eg Europe/Zurich)
         /// </summary>
-        /// <param name="fieldName"></param>
+        /// <param name="fieldIndex"></param>
         /// <returns></returns>
         public TimeZoneInfo? GetTimeZoneFieldValue(int fieldIndex)
         {
@@ -757,7 +765,7 @@ namespace Kull.Data
         /// <summary>
         /// Gets a Datetimeoffset field value
         /// </summary>
-        /// <param name="fieldName"></param>
+        /// <param name="fieldIndex">The index of the field</param>
         /// <returns></returns>
         public DateTimeOffset? GetDateTimeOffsetFieldValue(int fieldIndex)
         {

@@ -17,7 +17,7 @@ namespace Kull.Data.Reporting
         /// <summary>
         /// The url of the server to be used by default
         /// </summary>
-        public static string DefaultReportServerUrl { get; set; }
+        public static string? DefaultReportServerUrl { get; set; }
 
         /// <summary>
         /// Wheter or not a server supports by default Office 2007 Formats
@@ -49,14 +49,14 @@ namespace Kull.Data.Reporting
             this.ReportName = name;
         }
 
-        private string reportServerURL;
+        private string? reportServerURL;
 
         /// <summary>
         /// The Url of the location of the reports
         /// </summary>
         /// <example>https://sharepoint2010.kull.ch/sites/finma/Reports/
         /// </example>
-        public string ReportServerURL
+        public string? ReportServerURL
         {
             get { return reportServerURL; }
             set { reportServerURL = value; }

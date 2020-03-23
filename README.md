@@ -34,6 +34,27 @@ using(var rdr = cmd.ExecuteReader())
 }
 ```
 
+## Abstraction of Config 
+
+You can simple call `Kull.Data.DatabaseUtils.GetConnectionFromConfig("NAMEOFCONNECTIONSTRING")` and it will return your DbConnection. 
+
+It works in the following order:
+
+ - Look in System.Configuration.ConfigurationManager.ConnectionStrings (.Net Fx only)
+ - Look in System.Configuration.ConfigurationManager.AppSettings (.Net Fx only)
+ - Look in appsettings.json (.Net Core only)
+ - Look in Environment Variables
+
+When looking into Environment Variables, the ones of [Azure functions](https://azure.microsoft.com/en-us/blog/windows-azure-web-sites-how-application-strings-and-connection-strings-work/) are the base.
+We support the following prefixes:
+
+ - No prefix, meaning just NAMEOFCONNECTIONSTRING in the example above 
+ - SQLCONNSTR_
+ - SQLAZURECONNSTR_
+ - MYSQLCONNSTR_
+ - PostgreSQLCONNSTR_
+ - CUSTOMCONNSTR_ 
+
 
 ## Other Feature: WrapperDataReader and ObjectDataReader
 
