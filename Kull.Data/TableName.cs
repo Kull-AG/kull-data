@@ -188,7 +188,7 @@ namespace Kull.Data
         /// <param name="obj1"></param>
         /// <param name="obj2"></param>
         /// <returns></returns>
-        public static bool operator ==(DBObjectName obj1, DBObjectName obj2)
+        public static bool operator ==(DBObjectName? obj1, DBObjectName? obj2)
         {
             if (object.ReferenceEquals(obj1, obj2))
             {
@@ -205,7 +205,7 @@ namespace Kull.Data
         /// <param name="obj1"></param>
         /// <param name="obj2"></param>
         /// <returns></returns>
-        public static bool operator !=(DBObjectName obj1, DBObjectName obj2)
+        public static bool operator !=(DBObjectName? obj1, DBObjectName? obj2)
         {
             return !(obj1 == obj2);
         }
@@ -231,22 +231,22 @@ namespace Kull.Data
             }
         }
 
-        public static bool operator <(DBObjectName left, DBObjectName right)
+        public static bool operator <(DBObjectName? left, DBObjectName? right)
         {
             return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
         }
 
-        public static bool operator <=(DBObjectName left, DBObjectName right)
+        public static bool operator <=(DBObjectName? left, DBObjectName? right)
         {
             return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
         }
 
-        public static bool operator >(DBObjectName left, DBObjectName right)
+        public static bool operator >(DBObjectName? left, DBObjectName? right)
         {
             return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
         }
 
-        public static bool operator >=(DBObjectName left, DBObjectName right)
+        public static bool operator >=(DBObjectName? left, DBObjectName? right)
         {
             return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
         }
