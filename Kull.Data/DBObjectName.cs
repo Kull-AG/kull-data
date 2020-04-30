@@ -231,21 +231,36 @@ namespace Kull.Data
             }
         }
 
+        /// <summary>
+        /// String comparision. Mainly usefol for sorting in a list. Compares ToString(true)
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
         public static bool operator <(DBObjectName? left, DBObjectName? right)
         {
             return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
         }
 
+        /// <summary>
+        /// String comparision. Mainly usefol for sorting in a list. Compares ToString(true)
+        /// </summary>
         public static bool operator <=(DBObjectName? left, DBObjectName? right)
         {
             return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
         }
+        /// <summary>
+        /// String comparision. Mainly usefol for sorting in a list. Compares ToString(true)
+        /// </summary>
 
         public static bool operator >(DBObjectName? left, DBObjectName? right)
         {
             return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
         }
 
+        /// <summary>
+        /// String comparision. Mainly usefol for sorting in a list. Compares ToString(true)
+        /// </summary>
         public static bool operator >=(DBObjectName? left, DBObjectName? right)
         {
             return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;

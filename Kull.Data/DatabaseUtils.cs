@@ -514,7 +514,13 @@ namespace Kull.Data
 
         }
 #endif
-
+        /// <summary>
+        /// Gets a connection from the provided Entity Framework Style Connection String.
+        /// Attention: This only works with providers other then SQL Server in .Net Standard 2.1+ and in full .Net Framework
+        /// </summary>
+        /// <param name="entityFrameworkConnectionString">The Connection string</param>
+        /// <param name="defaultProviderName">The Provider name if no provider is specified</param>
+        /// <returns></returns>
         public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string? defaultProviderName)
         {
 
