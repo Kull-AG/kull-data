@@ -12,5 +12,6 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.100' # SDK Version to use.
+    - run: Dism /online /Enable-Feature /FeatureName:"NetFx3"
     - run: dotnet restore
     - run: dotnet build Kull.Data/Kull.Data.csproj
