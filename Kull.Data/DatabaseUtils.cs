@@ -37,6 +37,21 @@ namespace Kull.Data
             return con;
         }
 
+#if !NET2
+        /// <summary>
+        /// Asynchronously checks the connection to be open and if not open, opens it
+        /// </summary>
+        /// <param name="con">The connection</param>
+        /// <returns>The same connection</returns>
+        public static async Task<DbConnection> AssureOpenAsync(this DbConnection con)
+        {
+            if (con.State != ConnectionState.Open)
+            {
+                await con.OpenAsync().ConfigureAwait(false);
+            }
+            return con;
+        }
+#endif
 
         /// <summary>
         /// Gets Parameters from procedure
@@ -676,7 +691,7 @@ namespace Kull.Data
         public static async Task<T[]> AsArrayOfAsync<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
             where T : class, new()
         {
-            cmd.Connection.AssureOpen();
+            await cmd.Connection.AssureOpenAsync().ConfigureAwait(false);
             using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
             {
                 return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns);
