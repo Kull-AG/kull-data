@@ -154,7 +154,8 @@ namespace Kull.Data
         /// <summary>
         /// Simply adds a command parameter to a stored procedure. You can chain this method
         /// </summary>
-        public static DbCommand AddCommandParameter(this DbCommand cmd, string name, object? value, Type type, bool checkParameters = false)
+        public static DbCommand AddCommandParameter(this DbCommand cmd, string name, object? value, Type type, bool checkParameters = false,
+            Action<DbParameter> configure=null)
         {
             var schemaParam = cmd.CreateParameter();
             schemaParam.Direction = ParameterDirection.Input;
@@ -188,16 +189,22 @@ namespace Kull.Data
             {
                 schemaParam.DbType = DbType.Binary;
             }
+            if (configure != null)
+            {
+                configure(schemaParam);
+            }
             cmd.Parameters.Add(schemaParam);
             return cmd;
         }
 
+
+
         /// <summary>
         /// Simply adds a command parameter to a stored procedure. You can chain this method
         /// </summary>
-        public static DbCommand AddCommandParameter<T>(this DbCommand cmd, string name, T value, bool checkParameters = false)
+        public static DbCommand AddCommandParameter<T>(this DbCommand cmd, string name, T value, bool checkParameters = false, Action<DbParameter> configure = null)
         {
-            return AddCommandParameter(cmd, name, value, typeof(T), checkParameters);
+            return AddCommandParameter(cmd, name, value, typeof(T), checkParameters, configure);
         }
 
         /// <summary>
