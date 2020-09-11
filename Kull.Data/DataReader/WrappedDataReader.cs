@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kull.Data.DataReader
 {
@@ -12,12 +15,16 @@ namespace Kull.Data.DataReader
     public class WrappedDataReader : AbstractDatareader
     {
         private readonly IDataReader baseReader;
+        private readonly DbDataReader? baseReaderDb;
         private readonly IDictionary<string, object> additionalValues;
         private readonly string[] additionalColumns;
         private readonly int baseFieldCount;
         private readonly string[] names;
 
         private bool? firstRead = null;
+
+        public override bool HasRows => (firstRead == null || firstRead == true);
+
 
         /// <summary>
         /// This creates a new WrappedDataReader
@@ -37,11 +44,12 @@ namespace Kull.Data.DataReader
                 }
             }
             this.baseReader = baseReader;
+            this.baseReaderDb = baseReader as DbDataReader;
             this.additionalValues = additionalValues;
             this.additionalColumns = new string[additionalValues.Count];
             this.baseFieldCount = baseReader.FieldCount;
             int i = 0;
-           
+
             foreach (var item in additionalValues)
             {
                 additionalColumns[i++] = item.Key;
@@ -50,7 +58,7 @@ namespace Kull.Data.DataReader
             names = new string[baseReader.FieldCount + additionalColumns.Length];
 
             bool supportsNames = true;
-            if(names.Length>0)
+            if (names.Length > 0)
             { // Not nice, but the only method
                 try { baseReader.GetName(0); }
                 catch (NotSupportedException)
@@ -178,13 +186,6 @@ namespace Kull.Data.DataReader
             return base.GetChars(i, fieldOffset, buffer, bufferoffset, length);
         }
 
-        public override IDataReader GetData(int i)
-        {
-            if (IsBaseColumn(i))
-                return baseReader.GetData(i);
-            return base.GetData(i);
-        }
-
         public override string GetDataTypeName(int i)
         {
             if (IsBaseColumn(i))
@@ -253,7 +254,7 @@ namespace Kull.Data.DataReader
             }
             return -1;
         }
-        
+
         public override string GetString(int i)
         {
             return IsBaseColumn(i) ? baseReader.GetString(i) : (string)GetValue(i);
@@ -263,12 +264,30 @@ namespace Kull.Data.DataReader
         {
             return IsBaseColumn(i) ? baseReader.GetValue(i) : additionalValues[additionalColumns[i - baseFieldCount]];
         }
+#if !NET2
+        public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
+        {
+            return IsBaseColumn(ordinal) ? (baseReaderDb == null ? Task.FromResult((T)baseReader.GetValue(ordinal))
+                    : baseReaderDb.GetFieldValueAsync<T>(ordinal, cancellationToken))
+                : Task.FromResult((T)additionalValues[additionalColumns[ordinal - baseFieldCount]]);
+        }
 
+        public override T GetFieldValue<T>(int ordinal)
+        {
+            if (!IsBaseColumn(ordinal))
+            {
+                return (T)additionalValues[additionalColumns[ordinal - baseFieldCount]];
+            }
+            if (baseReaderDb != null)
+                return baseReaderDb.GetFieldValue<T>(ordinal);
+            return (T)baseReader.GetValue(ordinal);
+        }
+#endif
         public override bool IsDBNull(int i)
         {
             return IsBaseColumn(i) ? baseReader.IsDBNull(i) : additionalValues[additionalColumns[i - baseFieldCount]] == DBNull.Value;
         }
-
+        
         public override bool NextResult()
         {
             return baseReader.NextResult();
@@ -276,7 +295,7 @@ namespace Kull.Data.DataReader
 
         public override bool Read()
         {
-            if(firstRead !=null)
+            if (firstRead != null)
             {
                 // Skip first read
                 var oFirstRead = firstRead.Value;
@@ -285,5 +304,28 @@ namespace Kull.Data.DataReader
             }
             return baseReader.Read();
         }
+
+#if !NET2
+        public override Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
+            return baseReaderDb?.ReadAsync(cancellationToken) ?? Task.FromResult(Read());
+        }
+
+        public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
+        {
+            return baseReaderDb?.NextResultAsync(cancellationToken) ?? Task.FromResult(NextResult());
+        }
+#endif
+#if ASYNCSTREAM
+        public override Task CloseAsync()
+        {
+            if(baseReaderDb != null)
+            {
+                return baseReaderDb.CloseAsync();
+            }
+            baseReader.Close();
+            return Task.CompletedTask;
+        }
+#endif
     }
 }

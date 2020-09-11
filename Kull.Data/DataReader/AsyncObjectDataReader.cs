@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ASYNCSTREAM
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -11,15 +12,17 @@ namespace Kull.Data.DataReader
     /// <summary>
     /// A class for converting a list of dictionaries to a DataReader.
     /// </summary>
-    public class ObjectDataReader : AbstractDatareader
+    public class AsyncObjectDataReader : AbstractDatareader
     {
-        private readonly IEnumerator<IDictionary<string, object>> baseValues;
-        private string[] names;
+        private readonly IAsyncEnumerator<IDictionary<string, object>> baseValues;
+        private string[]? names;
         private bool isClosed = false;
         private Type[]? types;
         private bool? firstRead = null;
 
         public override bool HasRows => (firstRead == null || firstRead == true);
+
+        Task initTask;
 
         /// <summary>
         /// This creates a new ObjectDataReader
@@ -27,48 +30,24 @@ namespace Kull.Data.DataReader
         /// <param name="baseValues">The values to base on</param>
         /// <param name="names">The names are available only after the first read which does sometimes make trouble.
         /// If you know the names before, set them here (alternatively pass a list)</param>
-        /// <param name="deepTypeScan">Set this if you want to scan the whole list or as much as neccessary to get field types</param>
-        public ObjectDataReader(IEnumerable<IDictionary<string, object>> baseValues, string[]? names = null,
-                bool deepTypeScan = false)
+        public AsyncObjectDataReader(IAsyncEnumerable<IDictionary<string, object>> baseValues, string[]? names = null)
         {
-            this.baseValues = baseValues.GetEnumerator();
-            firstRead = this.baseValues.MoveNext();
-
-            this.names = names ?? this.baseValues.Current.Keys.ToArray();
-            if (deepTypeScan)
+            this.baseValues = baseValues.GetAsyncEnumerator();
+            if (names == null)
             {
-                // We have to enumerate it twice in this case (even though we might do not have to scan the full list)
-                foreach (var item in baseValues)
-                {
-                    if (names == null)
-                    {
-                        names = item.Keys.ToArray();
-                    }
-                    if (types == null)
-                    {
-                        types = new Type[names.Length];
-                    }
-                    bool oneNull = false;
-                    for (int i = 0; i < names.Length; i++)
-                    {
-                        string key = names[i];
-                        if (types[i] == null)
-                        {
-                            if (item[key] != null && item[key] != DBNull.Value)
-                            {
-                                types[i] = item[key].GetType();
-                            }
-                            else
-                            {
-                                oneNull = true;
-                            }
-                        }
-                    }
-                    if (!oneNull)
-                        break;
-                }
+                this.initTask = Init();
             }
+            else
+            {
+                initTask = Task.CompletedTask;
+            }
+        }
 
+        private async Task Init()
+        {
+            firstRead = await this.baseValues.MoveNextAsync();
+
+            this.names = this.baseValues.Current.Keys.ToArray();
         }
 
         /// <summary>
@@ -109,24 +88,35 @@ namespace Kull.Data.DataReader
 
         public override int RecordsAffected => 0;
 
-        public override int FieldCount => names.Length;
-
-        public override void Close()
+        public override int FieldCount
         {
-            if (!isClosed)
+            get
             {
-                baseValues.Dispose();
-                isClosed = true;
+                if (names == null) throw new InvalidOperationException("Either do a read first or set names on conststructor");
+                return names.Length;
             }
         }
 
-        protected override void Dispose(bool disposing)
+        public override Task CloseAsync()
         {
             if (!isClosed)
             {
-                baseValues.Dispose();
+                var t = baseValues.DisposeAsync();
                 isClosed = true;
+                return t.AsTask();
             }
+            return Task.CompletedTask;
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            if (!isClosed)
+            {
+                var t = baseValues.DisposeAsync();
+                isClosed = true;
+                return t;
+            }
+            return default;
         }
 
         public override string GetName(int i)
@@ -162,16 +152,24 @@ namespace Kull.Data.DataReader
 
         public override bool Read()
         {
-            if (firstRead!=null)
+            throw new NotImplementedException();
+        }
+
+
+        public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
+            await initTask;
+            if (firstRead != null)
             {
                 bool vl = firstRead.Value;
                 firstRead = null;
                 return vl; // Do not use MoveNext
             }
-            return this.baseValues.MoveNext();
+            return await this.baseValues.MoveNextAsync();
         }
 
-        
-        
+
+
     }
 }
+#endif
