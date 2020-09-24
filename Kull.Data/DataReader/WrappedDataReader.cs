@@ -264,7 +264,7 @@ namespace Kull.Data.DataReader
         {
             return IsBaseColumn(i) ? baseReader.GetValue(i) : additionalValues[additionalColumns[i - baseFieldCount]];
         }
-#if !NET2
+
         public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
         {
             return IsBaseColumn(ordinal) ? (baseReaderDb == null ? Task.FromResult((T)baseReader.GetValue(ordinal))
@@ -282,7 +282,7 @@ namespace Kull.Data.DataReader
                 return baseReaderDb.GetFieldValue<T>(ordinal);
             return (T)baseReader.GetValue(ordinal);
         }
-#endif
+
         public override bool IsDBNull(int i)
         {
             return IsBaseColumn(i) ? baseReader.IsDBNull(i) : additionalValues[additionalColumns[i - baseFieldCount]] == DBNull.Value;

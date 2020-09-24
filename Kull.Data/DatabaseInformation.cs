@@ -137,7 +137,6 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>'
             }
             return result;
         }
-#if !NET2
 
         /// <summary>
         /// Get all parameter names of a Stored Procedure
@@ -187,7 +186,6 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>'
             }
             return result;
         }
-#endif
 
         /// <summary>
         /// This method must be tested. It should create a Stored Procedure if it does not exist yet

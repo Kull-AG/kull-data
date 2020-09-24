@@ -201,7 +201,6 @@ namespace Kull.Data.DataReader
         {
             throw new NotImplementedException();
         }
-#if !NET2
         public override Task<bool> ReadAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(this.Read());
@@ -211,6 +210,5 @@ namespace Kull.Data.DataReader
         {
             return Task.FromResult(this.NextResult());
         }
-#endif
     }
 }

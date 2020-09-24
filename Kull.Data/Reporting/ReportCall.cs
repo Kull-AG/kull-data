@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-#if !NET2
 using System.Threading.Tasks;
-#endif
 
 namespace Kull.Data.Reporting
 {
@@ -159,7 +157,6 @@ namespace Kull.Data.Reporting
             return url;
         }
 
-#if !CoreFx
         /// <summary>
         /// Downloads the Report in binary form
         /// </summary>
@@ -170,8 +167,7 @@ namespace Kull.Data.Reporting
             var cl = new System.Net.WebClient();
             return cl.DownloadData(url);
         }
-#endif
-#if !NET2
+
         /// <summary>
         /// Downloads the Report in binary form
         /// </summary>
@@ -182,7 +178,6 @@ namespace Kull.Data.Reporting
             var cl = new System.Net.Http.HttpClient();
             return await cl.GetByteArrayAsync(url).ConfigureAwait(false);
         }
-#endif
 
         private static string? GetStringFromArray(System.Collections.IEnumerable? input, string delimiter = ";")
         {
@@ -278,11 +273,7 @@ namespace Kull.Data.Reporting
             else
             {
                 string? strValue = GetStringOfValue(value)??"";
-#if CoreFx
                 url += String.Format("{0}={1}", paramPrefix + name, System.Uri.EscapeUriString(strValue));
-#else
-                url += String.Format("{0}={1}", paramPrefix + name, System.Web.HttpUtility.UrlEncode(strValue));
-#endif
 
             }
 

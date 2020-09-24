@@ -5,9 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-#if !NET2
 using System.Threading.Tasks;
-#endif
 using dt = System.Data;
 using dba = System.Data.Common;
 #if NETSTD
@@ -37,7 +35,6 @@ namespace Kull.Data
             return con;
         }
 
-#if !NET2
         /// <summary>
         /// Asynchronously checks the connection to be open and if not open, opens it
         /// </summary>
@@ -51,7 +48,6 @@ namespace Kull.Data
             }
             return con;
         }
-#endif
 
         /// <summary>
         /// Gets Parameters from procedure
@@ -62,7 +58,6 @@ namespace Kull.Data
             return DatabaseInformation.Create(connection).GetSPParameters(storedProcedure, doNoUseCachedResults);
         }
 
-#if !NET2
         /// <summary>
         /// Gets Parameters from procedure
         /// Calls the Database
@@ -71,7 +66,6 @@ namespace Kull.Data
         {
             return DatabaseInformation.Create(connection).GetSPParametersAsync(storedProcedure, doNoUseCachedResults);
         }
-#endif
 
         /// <summary>
         /// Gets the names of all parameters of an sp and sets those whose have a property in an 
@@ -227,25 +221,6 @@ namespace Kull.Data
                 return (DbDataAdapter)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.OdbcDataAdapter, System.Data.SqlClient", true), cmd);
             }
             throw new NotSupportedException("CommandType not supported. Create adapter manually");
-
-#elif NET2
-
-            if (cmd is System.Data.SqlClient.SqlCommand)
-            {
-                return new System.Data.SqlClient.SqlDataAdapter((System.Data.SqlClient.SqlCommand)cmd);
-
-            }
-            else if (cmd is System.Data.OleDb.OleDbCommand)
-            {
-                return new System.Data.OleDb.OleDbDataAdapter((System.Data.OleDb.OleDbCommand)cmd);
-
-            }
-            else if (cmd is System.Data.Odbc.OdbcCommand)
-            {
-                return new System.Data.Odbc.OdbcDataAdapter((System.Data.Odbc.OdbcCommand)cmd);
-
-            }
-            throw new NotSupportedException("CommandType not supported. Create adapter manually");
 #else
             var factory = dba.DbProviderFactories.GetFactory(cmd.Connection);
             var adapt = factory.CreateDataAdapter();
@@ -267,7 +242,7 @@ namespace Kull.Data
             adapt.Fill(dt);
             return dt;
         }
-#if !NET2
+
         /// <summary>
         /// Returns asynchronously the Table of the Command
         /// </summary>
@@ -287,7 +262,7 @@ namespace Kull.Data
                 return dt;
             }
         }
-#endif
+
         /// <summary>
         /// This may be useful if you want to serialize a full table as json. Usually, a IDictionary object is serialized as JSON object (eg Newtonsoft.Json)
         /// It can be used with dynmaic as well (http://stackoverflow.com/questions/18290852/generate-dynamic-object-from-dictionary-with-c-reflection)
@@ -296,9 +271,7 @@ namespace Kull.Data
         /// <param name="table">The datatable to convert to a Dictionary List</param>
         /// <param name="inputList">An existing list to append the items. Can be null to create a new list</param>
         /// <returns>A List containing the Objects</returns>
-#if !NET2
         [System.Diagnostics.Contracts.Pure]
-#endif
         [Obsolete("Use DbDataReader instead")]
         public static List<T> AsDictionaryList<T>(this dt.DataTable table, List<T>? inputList = null) where T : IDictionary<string, object>, new()
         {
@@ -364,7 +337,7 @@ namespace Kull.Data
             adapt.Fill(dt);
             return dt;
         }
-#if !NET2
+
         /// <summary>
         /// Returns all Tables returned from the Procedure
         /// </summary>
@@ -381,7 +354,7 @@ namespace Kull.Data
                 return dt;
             }).ConfigureAwait(false);
         }
-#endif
+
         /// <summary>
         /// Returns a DbCommand Object for a Procedure
         /// </summary>
@@ -481,7 +454,7 @@ namespace Kull.Data
 
         }
 
-#if !NET2
+
         /// <summary>
         /// Executes a stored function on the database. Parameters do not have to be in correct order, but they should
         /// </summary>
@@ -535,7 +508,7 @@ namespace Kull.Data
             }
 
         }
-#endif
+
         /// <summary>
         /// Gets a connection from the provided Entity Framework Style Connection String.
         /// Attention: This only works with providers other then SQL Server in .Net Standard 2.1+ and in full .Net Framework
@@ -686,7 +659,7 @@ namespace Kull.Data
                 return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns);
             }
         }
-#if !NET2
+
 
         /// <summary>
         /// Returns a list (fully loaded in RAM) of the DB Objects
@@ -704,6 +677,6 @@ namespace Kull.Data
                 return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns);
             }
         }
-#endif
+
     }
 }

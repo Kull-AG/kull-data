@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <Description>Kull.Data Class Library</Description>
-    <Version>5.4.0-beta1</Version>
+    <Version>5.4.0-rc1</Version>
     <Authors>ehrsam</Authors>
-    <TargetFrameworks>net35;net47;netstandard2.0;netstandard2.1;net48</TargetFrameworks>
+    <TargetFrameworks>net47;netstandard2.0;netstandard2.1;net48</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <AssemblyName>Kull.Data</AssemblyName>
@@ -28,24 +28,9 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Deterministic>true</Deterministic>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' != 'net35' ">
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net35' ">
-    <Nullable>annotations</Nullable>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net35' ">
-    <Reference Include="System.Core" />
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Data" />
-    <PackageReference Include="TaskParallelLibrary" Version="1.0.2856" />
-  </ItemGroup>
-
+  
   <ItemGroup Condition=" '$(TargetFramework)' == 'net47' ">
     <Reference Include="System.Configuration" />
     <Reference Include="System.Net.Requests" />
@@ -58,11 +43,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web" />
   </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net35' ">
-    <DefineConstants>$(DefineConstants);NET2</DefineConstants>
-  </PropertyGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net47' ">
     <DefineConstants>$(DefineConstants);NET4</DefineConstants>
   </PropertyGroup>

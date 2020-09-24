@@ -23,11 +23,7 @@ namespace Kull.Data.EFFallback
         /// <summary>
         /// Contains the data of the connection string. This will be Data Source as Key and so on.
         /// </summary>
-#if NET2
-        public readonly IDictionary<string, string> ConnectionStringData;
-#else
-            public readonly IReadOnlyDictionary<string, string> ConnectionStringData;
-#endif
+        public readonly IReadOnlyDictionary<string, string> ConnectionStringData;
 
         /// <summary>
         /// Creates new Results
