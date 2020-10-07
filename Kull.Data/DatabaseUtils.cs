@@ -20,6 +20,10 @@ namespace Kull.Data
     /// </summary>
     public static class DatabaseUtils
     {
+        /// <summary>
+        /// Set this to true if you want to use Microsoft.Data.SqlClient for MSSQL
+        /// </summary>
+        public static bool UseNewMSSqlClient { get; set; } = false;
 
         /// <summary>
         /// Synchronously checks the connection to be open and if not open, opens it
@@ -509,14 +513,36 @@ namespace Kull.Data
 
         }
 
+#if !NETSTD2
         /// <summary>
         /// Gets a connection from the provided Entity Framework Style Connection String.
         /// Attention: This only works with providers other then SQL Server in .Net Standard 2.1+ and in full .Net Framework
         /// </summary>
         /// <param name="entityFrameworkConnectionString">The Connection string</param>
-        /// <param name="defaultProviderName">The Provider name if no provider is specified</param>
+        /// <param name="defaultProvider">The Provider if no provider is specified</param>
         /// <returns></returns>
-        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string? defaultProviderName)
+        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, DbProviderFactory defaultProvider)
+        {
+            var connStrEF = EFFallback.ConnectionStringParser.ParseEF(entityFrameworkConnectionString);
+            if (connStrEF.Provider == null && defaultProvider == null)
+            {
+                throw new ArgumentException("Must provide a correct EF Connection string");
+            }
+            var factory = connStrEF.Provider == null ? DbProviderFactories.GetFactory(connStrEF.Provider): defaultProvider;//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
+            var connection = factory.CreateConnection();
+            connection.ConnectionString = connStrEF.ConnectionString;
+            return connection;
+        }
+#endif
+
+            /// <summary>
+            /// Gets a connection from the provided Entity Framework Style Connection String.
+            /// Attention: This only works with providers other then SQL Server in .Net Standard 2.1+ and in full .Net Framework
+            /// </summary>
+            /// <param name="entityFrameworkConnectionString">The Connection string</param>
+            /// <param name="defaultProviderName">The Provider name if no provider is specified</param>
+            /// <returns></returns>
+            public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string? defaultProviderName)
         {
 
             //Parse the connection string
@@ -535,6 +561,10 @@ namespace Kull.Data
             if (provider == "System.Data.SqlClient")
             {
                 return (DbConnection)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlConnection, System.Data.SqlClient", true), connStrEF.ConnectionString);
+            }
+            else if (provider == "Microsoft.Data.SqlClient")
+            {
+                return (DbConnection)Activator.CreateInstance(Type.GetType("Microsoft.Data.SqlClient.SqlConnection, Microsoft.Data.SqlClient", true), connStrEF.ConnectionString);
             }
             else
             {
@@ -560,12 +590,15 @@ namespace Kull.Data
             var connStrEF = EFFallback.ConnectionStringParser.ParseEF(entityFrameworkConnectionString);
             if (connStrEF.Provider == "System.Data.SqlClient.SqlClientFactory" || connStrEF.Provider == "System.Data.SqlClient")
                 return (DbConnection)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlConnection, System.Data.SqlClient", true), connStrEF.ConnectionString);
+            if (connStrEF.Provider == "Microsoft.Data.SqlClient.SqlClientFactory" || connStrEF.Provider == "Microsoft.Data.SqlClient")
+                return (DbConnection)Activator.CreateInstance(Type.GetType("Microsoft.Data.SqlClient.SqlConnection, Microsoft.Data.SqlClient", true), connStrEF.ConnectionString);
             throw new NotSupportedException("Connection Type not supported");
 #else
-            string defaultProvider = "System.Data.SqlClient";
+            string defaultProvider = UseNewMSSqlClient ? "Microsoft.Data.SqlClient" : "System.Data.SqlClient";
             return GetConnectionFromEFString(entityFrameworkConnectionString, checkEf ? defaultProvider : null);
 #endif
         }
+
 
         /// <summary>
         /// Reads a connection string for environment variables. Supported are:
@@ -575,17 +608,18 @@ namespace Kull.Data
         /// - PostgreSQLCONNSTR_ for PostgreSQL
         /// </summary>
         /// <param name="configName"></param>
+        /// <param name="useNewSqlClient">True to use Microsoft.Data.SqlClient for MSSQL</param>
         /// <returns></returns>
         public static DbConnection GetConnectionFromEnvironment(string configName)
         {
             var nameTypeMap = new Dictionary<string, string>()
            {
-               { "", "System.Data.SqlClient" },
-               { "SQLCONNSTR_", "System.Data.SqlClient"},
-               { "SQLAZURECONNSTR_", "System.Data.SqlClient"},
+               { "", UseNewMSSqlClient ? "Microsoft.Data.SqlClient": "System.Data.SqlClient" },
+               { "SQLCONNSTR_",  UseNewMSSqlClient ? "Microsoft.Data.SqlClient":"System.Data.SqlClient"},
+               { "SQLAZURECONNSTR_", UseNewMSSqlClient ? "Microsoft.Data.SqlClient": "System.Data.SqlClient"},
                { "MYSQLCONNSTR_", "MySql.Data.MySqlClient"},
                { "PostgreSQLCONNSTR_", "Npgsql"},
-               { "CUSTOMCONNSTR_", "System.Data.SqlClient"}
+               { "CUSTOMCONNSTR_",  UseNewMSSqlClient ? "Microsoft.Data.SqlClient":"System.Data.SqlClient"}
             };
             foreach (var item in nameTypeMap)
             {
@@ -619,6 +653,8 @@ namespace Kull.Data
             }
             return GetConnectionFromEnvironment(configName);
         }
+
+
 #else
         /// <summary>
         /// Gets the Connection from the appsettings.json file
@@ -643,14 +679,50 @@ namespace Kull.Data
         }
 #endif
 
+#if !NETSTD2
         /// <summary>
-        /// Returns a list (fully loaded in RAM) of the DB Objects
+        /// Gets a connection from a ConfigName. This will search in System.Configuration.ConfigurationManager.ConnectionStrings
+        /// and System.Configuration.ConfigurationManager.AppSettings for any valid Entity Framework or Sql Server connection string
         /// </summary>
-        /// <typeparam name="T">The Type to return</typeparam>
-        /// <param name="cmd">The command</param>
-        /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
-        /// <returns>A List of the items</returns>
-        public static T[] AsArrayOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
+        /// <param name="configName"></param>
+        /// <param name="dbProviderFactory">The default factory if none is specified</param>
+        /// <returns></returns>
+        public static DbConnection GetConnectionFromConfig(string configName, DbProviderFactory dbProviderFactory)
+        {
+#if !NETSTD
+            if (System.Configuration.ConfigurationManager.ConnectionStrings[configName] != null)
+            {
+                return GetConnectionFromEFString(System.Configuration.ConfigurationManager.ConnectionStrings[configName].ConnectionString, dbProviderFactory);
+            }
+            else if (System.Configuration.ConfigurationManager.AppSettings[configName] != null)
+            {
+                return GetConnectionFromEFString(System.Configuration.ConfigurationManager.AppSettings[configName], dbProviderFactory);
+            }
+#else
+            var builder = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .SetBasePath(System.IO.Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", true, false);
+
+
+            var Configuration = builder.Build();
+            var value = Configuration["ConnectionStrings:" + configName];if (!string.IsNullOrEmpty(value))
+            {
+                return GetConnectionFromEFString(value, true);
+            }
+#endif
+
+            return GetConnectionFromEnvironment(configName);
+        }
+#endif
+
+            /// <summary>
+            /// Returns a list (fully loaded in RAM) of the DB Objects
+            /// </summary>
+            /// <typeparam name="T">The Type to return</typeparam>
+            /// <param name="cmd">The command</param>
+            /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
+            /// <returns>A List of the items</returns>
+            public static T[] AsArrayOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
             where T : class, new()
         {
             cmd.Connection.AssureOpen();
