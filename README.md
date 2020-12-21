@@ -4,6 +4,9 @@ This Library extends the .Net Standard DBA Classes like System.Data.Common.DbCon
 with some extension methods that makes them easiert to use. You can use this a very simple ORM Mapper as well, without 
 the need of a full-bown Entity Framework. A good alternative is [Dapper](https://github.com/StackExchange/Dapper). 
 
+Install it using Nuget, Package "Kull.Data":
+[![NuGet Badge](https://buildstats.info/nuget/Kull.Data)](https://www.nuget.org/packages/Kull.Data/)
+
 ## Some Examples
 
 You always need to be `using Kull.Data` to use the extension methods.
