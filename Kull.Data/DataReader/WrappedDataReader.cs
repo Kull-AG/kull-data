@@ -12,7 +12,11 @@ namespace Kull.Data.DataReader
     /// <summary>
     /// A class for Adding columns to a DataReader.
     /// </summary>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
+#pragma warning disable CA1010 // Collections should implement generic interface
     public class WrappedDataReader : AbstractDatareader
+#pragma warning restore CA1010 // Collections should implement generic interface
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         private readonly IDataReader baseReader;
         private readonly DbDataReader? baseReaderDb;

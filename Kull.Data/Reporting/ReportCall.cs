@@ -176,7 +176,9 @@ namespace Kull.Data.Reporting
         {
             var url = this.GetUrl();
             var cl = new System.Net.Http.HttpClient();
+#pragma warning disable CA2234 // Pass system uri objects instead of strings
             return await cl.GetByteArrayAsync(url).ConfigureAwait(false);
+#pragma warning restore CA2234 // Pass system uri objects instead of strings
         }
 
         private static string? GetStringFromArray(System.Collections.IEnumerable? input, string delimiter = ";")
@@ -244,7 +246,7 @@ namespace Kull.Data.Reporting
 
         }
 
-        private void AddReportParameter(ref string url, string name, object value)
+        private void AddReportParameter(ref string url, string name, object? value)
         {
             if (url == null)
                 throw new ArgumentNullException(nameof(url));

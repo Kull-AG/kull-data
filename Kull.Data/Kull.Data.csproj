@@ -20,7 +20,7 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Kull-AG/kull-data</RepositoryUrl>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <Deterministic>True</Deterministic>
     <Copyright>Kull AG</Copyright>
     <IncludeSymbols>true</IncludeSymbols>

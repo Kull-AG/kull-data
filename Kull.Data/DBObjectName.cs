@@ -194,7 +194,7 @@ namespace Kull.Data
             {
                 return true;
             }
-            if ((object)obj1 == null || (object)obj2 == null)
+            if ((object?)obj1 == null || (object?)obj2 == null)
                 return false;
             return obj1.Equals(obj2);
         }
@@ -215,7 +215,7 @@ namespace Kull.Data
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
         {
             if (object.ReferenceEquals(obj, this))
                 return 0;

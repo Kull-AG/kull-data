@@ -11,7 +11,11 @@ namespace Kull.Data.DataReader
     /// <summary>
     /// A class for converting a list of dictionaries to a DataReader.
     /// </summary>
+#pragma warning disable CA1710 // Identifiers should have correct suffix
+#pragma warning disable CA1010 // Collections should implement generic interface
     public class ObjectDataReader : AbstractDatareader
+#pragma warning restore CA1010 // Collections should implement generic interface
+#pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         private readonly IEnumerator<IDictionary<string, object>> baseValues;
         private string[] names;

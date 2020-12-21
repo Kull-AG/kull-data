@@ -12,7 +12,11 @@ namespace Kull.Data.DataReader
     /// <summary>
     /// A class for converting a list of dictionaries to a DataReader.
     /// </summary>
+#pragma warning disable CA1010 // Collections should implement generic interface
+#pragma warning disable CA1710 // Identifiers should have correct suffix
     public class AsyncObjectDataReader : AbstractDatareader
+#pragma warning restore CA1710 // Identifiers should have correct suffix
+#pragma warning restore CA1010 // Collections should implement generic interface
     {
         private readonly IAsyncEnumerator<IDictionary<string, object>> baseValues;
         private string[]? names;
@@ -92,7 +96,9 @@ namespace Kull.Data.DataReader
         {
             get
             {
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
                 if (names == null) throw new InvalidOperationException("Either do a read first or set names on conststructor");
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
                 return names.Length;
             }
         }
@@ -121,11 +127,13 @@ namespace Kull.Data.DataReader
 
         public override string GetName(int i)
         {
+            if (names == null) throw new InvalidOperationException("Either do a read first or set names on conststructor");
             return names[i];
         }
 
         public override int GetOrdinal(string name)
         {
+            if (names == null) throw new InvalidOperationException("Either do a read first or set names on conststructor");
             for (int i = 0; i < names.Length; i++)
             {
                 if (names[i].Equals(name, StringComparison.CurrentCultureIgnoreCase))
@@ -136,12 +144,14 @@ namespace Kull.Data.DataReader
 
         public override object GetValue(int i)
         {
+            if (names == null) throw new InvalidOperationException("Either do a read first or set names on conststructor");
             return this.baseValues.Current[names[i]];
         }
 
 
         public override bool IsDBNull(int i)
         {
+            if (names == null) throw new InvalidOperationException("Either do a read first or set names on conststructor");
             return baseValues.Current[names[i]] == DBNull.Value || baseValues.Current[names[i]] == null;
         }
 
@@ -158,7 +168,7 @@ namespace Kull.Data.DataReader
 
         public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
         {
-            await initTask;
+            await initTask.ConfigureAwait(false);
             if (firstRead != null)
             {
                 bool vl = firstRead.Value;

@@ -153,7 +153,7 @@ namespace Kull.Data
         /// Simply adds a command parameter to a stored procedure. You can chain this method
         /// </summary>
         public static DbCommand AddCommandParameter(this DbCommand cmd, string name, object? value, Type type, bool checkParameters = false,
-            Action<DbParameter> configure=null)
+            Action<DbParameter>? configure=null)
         {
             var schemaParam = cmd.CreateParameter();
             schemaParam.Direction = ParameterDirection.Input;
@@ -200,7 +200,7 @@ namespace Kull.Data
         /// <summary>
         /// Simply adds a command parameter to a stored procedure. You can chain this method
         /// </summary>
-        public static DbCommand AddCommandParameter<T>(this DbCommand cmd, string name, T value, bool checkParameters = false, Action<DbParameter> configure = null)
+        public static DbCommand AddCommandParameter<T>(this DbCommand cmd, string name, T value, bool checkParameters = false, Action<DbParameter>? configure = null)
         {
             return AddCommandParameter(cmd, name, value, typeof(T), checkParameters, configure);
         }
@@ -608,7 +608,6 @@ namespace Kull.Data
         /// - PostgreSQLCONNSTR_ for PostgreSQL
         /// </summary>
         /// <param name="configName"></param>
-        /// <param name="useNewSqlClient">True to use Microsoft.Data.SqlClient for MSSQL</param>
         /// <returns></returns>
         public static DbConnection GetConnectionFromEnvironment(string configName)
         {
