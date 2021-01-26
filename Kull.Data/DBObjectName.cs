@@ -101,11 +101,9 @@ namespace Kull.Data
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            if (obj is DBObjectName)
+            if (obj is DBObjectName obj2)
             {
-                var obj2 = (DBObjectName)obj;
                 return obj2.ToString(true).ToLower() == this.ToString(true).ToLower();
-
             }
             return base.Equals(obj);
         }

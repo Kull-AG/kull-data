@@ -188,13 +188,13 @@ namespace Kull.Data.Reporting
             string output = "";
             foreach (var i in input)
             {
-                if (i is DateTime)
+                if (i is DateTime dt)
                 {
-                    output += ((DateTime)i).ToString("yyyy-MM-dd") + delimiter;
+                    output += dt.ToString("yyyy-MM-dd") + delimiter;
                 }
-                else if (i is DateTimeOffset)
+                else if (i is DateTimeOffset dto)
                 {
-                    output += ((DateTimeOffset)i).ToString("yyyy-MM-dd") + delimiter;
+                    output += dto.ToString("yyyy-MM-dd") + delimiter;
                 }
                 else
                 {
@@ -214,29 +214,29 @@ namespace Kull.Data.Reporting
             if (value == null)
                 return null;
             string? strValue;
-            if (value is string)
+            if (value is string s)
             {
-                strValue = (string)value;
+                strValue = s;
             }
-            else if (value is bool)
+            else if (value is bool b)
             {
-                strValue = ((bool)value).ToString();
+                strValue = b.ToString();
             }
-            else if (value is int)
+            else if (value is int i)
             {
-                strValue = ((int)value).ToString();
+                strValue = i.ToString();
             }
-            else if (value is byte)
+            else if (value is byte bt)
             {
-                strValue = ((byte)value).ToString();
+                strValue = bt.ToString();
             }
-            else if (value is DateTime)
+            else if (value is DateTime dt)
             {
-                strValue = ((DateTime)value).ToString("yyyy-MM-dd");
+                strValue = dt.ToString("yyyy-MM-dd");
             }
-            else if (value is System.Collections.IEnumerable)
+            else if (value is System.Collections.IEnumerable en)
             {
-                strValue = GetStringFromArray(value as System.Collections.IEnumerable);
+                strValue = GetStringFromArray(en);
             }
             else
             {

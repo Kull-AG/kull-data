@@ -21,7 +21,7 @@ namespace Kull.Data.DataReader
         private readonly IAsyncEnumerator<IDictionary<string, object>> baseValues;
         private string[]? names;
         private bool isClosed = false;
-        private Type[]? types;
+        private readonly Type[]? types;
         private bool? firstRead = null;
 
         public override bool HasRows => (firstRead == null || firstRead == true);

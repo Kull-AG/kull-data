@@ -153,7 +153,7 @@ namespace Kull.Data
         /// Simply adds a command parameter to a stored procedure. You can chain this method
         /// </summary>
         public static DbCommand AddCommandParameter(this DbCommand cmd, string name, object? value, Type type, bool checkParameters = false,
-            Action<DbParameter>? configure=null)
+            Action<DbParameter>? configure = null)
         {
             var schemaParam = cmd.CreateParameter();
             schemaParam.Direction = ParameterDirection.Input;
@@ -413,7 +413,6 @@ namespace Kull.Data
         /// <param name="checkParameters">Set this to false if you do not want this function to make an extra select on the db to get
         /// the parameters of the stored function. If you set this to false, ther parameters must be in correct order</param>
         /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100")]
         public static T ExecuteScalarFunction<T, TParam>(this DbConnection con, DBObjectName nameOfFunction, TParam parameters,
             bool checkParameters = true)
         {
@@ -528,21 +527,21 @@ namespace Kull.Data
             {
                 throw new ArgumentException("Must provide a correct EF Connection string");
             }
-            var factory = connStrEF.Provider == null ? DbProviderFactories.GetFactory(connStrEF.Provider): defaultProvider;//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
+            var factory = connStrEF.Provider != null ? DbProviderFactories.GetFactory(connStrEF.Provider) : defaultProvider;//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
             var connection = factory.CreateConnection();
             connection.ConnectionString = connStrEF.ConnectionString;
             return connection;
         }
 #endif
 
-            /// <summary>
-            /// Gets a connection from the provided Entity Framework Style Connection String.
-            /// Attention: This only works with providers other then SQL Server in .Net Standard 2.1+ and in full .Net Framework
-            /// </summary>
-            /// <param name="entityFrameworkConnectionString">The Connection string</param>
-            /// <param name="defaultProviderName">The Provider name if no provider is specified</param>
-            /// <returns></returns>
-            public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string? defaultProviderName)
+        /// <summary>
+        /// Gets a connection from the provided Entity Framework Style Connection String.
+        /// Attention: This only works with providers other then SQL Server in .Net Standard 2.1+ and in full .Net Framework
+        /// </summary>
+        /// <param name="entityFrameworkConnectionString">The Connection string</param>
+        /// <param name="defaultProviderName">The Provider name if no provider is specified</param>
+        /// <returns></returns>
+        public static DbConnection GetConnectionFromEFString(string entityFrameworkConnectionString, string? defaultProviderName)
         {
 
             //Parse the connection string
@@ -599,6 +598,53 @@ namespace Kull.Data
 #endif
         }
 
+        /// <summary>
+        /// Reads a connection string for environment variables. Supported are:
+        /// - The name of the connection itself
+        /// - SQLCONNSTR_ / SQLAZURECONNSTR_ for MSSQL
+        /// - MYSQLCONNSTR_ for Mysql
+        /// - PostgreSQLCONNSTR_ for PostgreSQL
+        /// </summary>
+        /// <param name="configName"></param>
+        /// <param name="throwOnNotFound">true to throw ArgumentException instead of returning null</param>
+        /// <param name="defaultFactory">If not stated in connection string, provides the default provider. Requires .Net Framework or .Net Standard 2.1+</param>
+        /// <returns></returns>
+        public static DbConnection? GetConnectionFromEnvironment(string configName, bool throwOnNotFound, DbProviderFactory? defaultFactory)
+
+        {
+            var msFactory = UseNewMSSqlClient ? "Microsoft.Data.SqlClient" : "System.Data.SqlClient";
+            var nameTypeMap = new Dictionary<string, string?>()
+           {
+               { "",  null},
+               { "SQLCONNSTR_",  msFactory},
+               { "SQLAZURECONNSTR_", msFactory},
+               { "MYSQLCONNSTR_", "MySql.Data.MySqlClient"},
+               { "PostgreSQLCONNSTR_", "Npgsql"},
+               { "CUSTOMCONNSTR_",  null}
+            };
+            foreach (var item in nameTypeMap)
+            {
+                string val = Environment.GetEnvironmentVariable(item.Key + configName);
+                if (val != null)
+                {
+#if !NETSTD2
+                    if (item.Value == null && defaultFactory != null)
+                    {
+                        return GetConnectionFromEFString(val, defaultFactory);
+                    }
+#endif
+                    return GetConnectionFromEFString(val, item.Value ?? msFactory);
+                }
+            }
+            if (throwOnNotFound)
+            {
+                throw new ArgumentException("Cannot find setting " + configName);
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         /// <summary>
         /// Reads a connection string for environment variables. Supported are:
@@ -609,28 +655,8 @@ namespace Kull.Data
         /// </summary>
         /// <param name="configName"></param>
         /// <returns></returns>
-        public static DbConnection GetConnectionFromEnvironment(string configName)
-        {
-            var nameTypeMap = new Dictionary<string, string>()
-           {
-               { "", UseNewMSSqlClient ? "Microsoft.Data.SqlClient": "System.Data.SqlClient" },
-               { "SQLCONNSTR_",  UseNewMSSqlClient ? "Microsoft.Data.SqlClient":"System.Data.SqlClient"},
-               { "SQLAZURECONNSTR_", UseNewMSSqlClient ? "Microsoft.Data.SqlClient": "System.Data.SqlClient"},
-               { "MYSQLCONNSTR_", "MySql.Data.MySqlClient"},
-               { "PostgreSQLCONNSTR_", "Npgsql"},
-               { "CUSTOMCONNSTR_",  UseNewMSSqlClient ? "Microsoft.Data.SqlClient":"System.Data.SqlClient"}
-            };
-            foreach (var item in nameTypeMap)
-            {
-                string val = Environment.GetEnvironmentVariable(item.Key + configName);
-                if (val != null)
-                {
-                    return GetConnectionFromEFString(val, item.Value);
-                }
-            }
-
-            throw new ArgumentException("Cannot find setting " + configName);
-        }
+        [Obsolete("Use GetConnectionFromEnvironment(string, bool)")]
+        public static DbConnection GetConnectionFromEnvironment(string configName) => GetConnectionFromEnvironment(configName, true, null)!;
 
 #if !NETSTD
         /// <summary>
@@ -650,7 +676,7 @@ namespace Kull.Data
             {
                 return GetConnectionFromEFString(System.Configuration.ConfigurationManager.AppSettings[configName], true);
             }
-            return GetConnectionFromEnvironment(configName);
+            return GetConnectionFromEnvironment(configName, true, null)!;
         }
 
 
@@ -672,7 +698,7 @@ namespace Kull.Data
             var value = Configuration["ConnectionStrings:" + configName];
             if (string.IsNullOrEmpty(value))
             {
-                return GetConnectionFromEnvironment(configName);
+                return GetConnectionFromEnvironment(configName, true, null)!;
             }
             return GetConnectionFromEFString(value, true);
         }
@@ -686,16 +712,16 @@ namespace Kull.Data
         /// <param name="configName"></param>
         /// <param name="dbProviderFactory">The default factory if none is specified</param>
         /// <returns></returns>
-        public static DbConnection GetConnectionFromConfig(string configName, DbProviderFactory dbProviderFactory)
+        public static DbConnection GetConnectionFromConfig(string configName, DbProviderFactory defaultProviderFactory)
         {
 #if !NETSTD
             if (System.Configuration.ConfigurationManager.ConnectionStrings[configName] != null)
             {
-                return GetConnectionFromEFString(System.Configuration.ConfigurationManager.ConnectionStrings[configName].ConnectionString, dbProviderFactory);
+                return GetConnectionFromEFString(System.Configuration.ConfigurationManager.ConnectionStrings[configName].ConnectionString, defaultProviderFactory);
             }
             else if (System.Configuration.ConfigurationManager.AppSettings[configName] != null)
             {
-                return GetConnectionFromEFString(System.Configuration.ConfigurationManager.AppSettings[configName], dbProviderFactory);
+                return GetConnectionFromEFString(System.Configuration.ConfigurationManager.AppSettings[configName], defaultProviderFactory);
             }
 #else
             var builder = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
@@ -704,25 +730,26 @@ namespace Kull.Data
 
 
             var Configuration = builder.Build();
-            var value = Configuration["ConnectionStrings:" + configName];if (!string.IsNullOrEmpty(value))
+            var value = Configuration["ConnectionStrings:" + configName];
+            if (!string.IsNullOrEmpty(value))
             {
-                return GetConnectionFromEFString(value, true);
+                return GetConnectionFromEFString(value, defaultProviderFactory);
             }
 #endif
 
-            return GetConnectionFromEnvironment(configName);
+            return GetConnectionFromEnvironment(configName, true, defaultProviderFactory)!;
         }
 #endif
 
-            /// <summary>
-            /// Returns a list (fully loaded in RAM) of the DB Objects
-            /// </summary>
-            /// <typeparam name="T">The Type to return</typeparam>
-            /// <param name="cmd">The command</param>
-            /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
-            /// <returns>A List of the items</returns>
-            public static T[] AsArrayOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
-            where T : class, new()
+        /// <summary>
+        /// Returns a list (fully loaded in RAM) of the DB Objects
+        /// </summary>
+        /// <typeparam name="T">The Type to return</typeparam>
+        /// <param name="cmd">The command</param>
+        /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
+        /// <returns>A List of the items</returns>
+        public static T[] AsArrayOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
+        where T : class, new()
         {
             cmd.Connection.AssureOpen();
             using (var rdr = cmd.ExecuteReader())

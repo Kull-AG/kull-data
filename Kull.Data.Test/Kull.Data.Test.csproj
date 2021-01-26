@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConnectionTest.cs" />
     <Compile Include="RowHelperTests.cs" />
     <Compile Include="DataReaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

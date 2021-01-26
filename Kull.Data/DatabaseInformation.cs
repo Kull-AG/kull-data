@@ -17,9 +17,9 @@ namespace Kull.Data
         /// <summary>
         /// A Dictionary with the name of the stored procedure as key and the names of its parameters as its value
         /// </summary>
-        private ConcurrentDictionary<string, string[]> spParameters = new ConcurrentDictionary<string, string[]>();
+        private readonly ConcurrentDictionary<string, string[]> spParameters = new ConcurrentDictionary<string, string[]>();
 
-        private static ConcurrentDictionary<DbConnection, DatabaseInformation> connectionInfoCache = new ConcurrentDictionary<DbConnection, DatabaseInformation>();
+        private static readonly  ConcurrentDictionary<DbConnection, DatabaseInformation> connectionInfoCache = new ConcurrentDictionary<DbConnection, DatabaseInformation>();
 
         /// <summary>
         /// Clear all Cached Parameters of Stored Procedures
@@ -97,7 +97,7 @@ namespace Kull.Data
         {
             if (!doNoUseCachedResults && spParameters.TryGetValue(storedProcedure.ToString(), out string[] spPrms))
                 return spPrms;
-            string[]? oldValue = null;
+            string[]? oldValue;
             if (!spParameters.TryGetValue(storedProcedure.ToString(), out oldValue))
             {
                 oldValue = null;
@@ -146,7 +146,7 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>'
         {
             if (!doNoUseCachedResults && spParameters.TryGetValue(storedProcedure.ToString(), out string[] spPrms))
                 return spPrms;
-            string[]? oldValue = null;
+            string[]? oldValue;
             if (!spParameters.TryGetValue(storedProcedure.ToString(), out oldValue))
             {
                 oldValue = null;
