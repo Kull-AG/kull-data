@@ -21,7 +21,7 @@ namespace Kull.Data.DataReader
         private readonly IAsyncEnumerator<IReadOnlyDictionary<string, object?>> baseValues;
         private string[]? names;
         private bool isClosed = false;
-        private readonly Type[]? types;
+        private Type[]? types;
         private bool? firstRead = null;
 
         public override bool HasRows => (firstRead == null || firstRead == true);
@@ -52,6 +52,7 @@ namespace Kull.Data.DataReader
             firstRead = await this.baseValues.MoveNextAsync();
 
             this.names = this.baseValues.Current.Keys.ToArray();
+            types = new Type[this.names.Length];
         }
 
         /// <summary>
@@ -142,7 +143,7 @@ namespace Kull.Data.DataReader
             return -1;
         }
 
-        public override object GetValue(int i)
+        public override object? GetValue(int i)
         {
             if (names == null) throw new InvalidOperationException("Either do a read first or set names on conststructor");
             return this.baseValues.Current[names[i]];

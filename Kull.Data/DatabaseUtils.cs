@@ -707,7 +707,7 @@ namespace Kull.Data
         /// and System.Configuration.ConfigurationManager.AppSettings for any valid Entity Framework or Sql Server connection string
         /// </summary>
         /// <param name="configName"></param>
-        /// <param name="dbProviderFactory">The default factory if none is specified</param>
+        /// <param name="defaultProviderFactory">The default factory if none is specified</param>
         /// <returns></returns>
         public static DbConnection GetConnectionFromConfig(string configName, DbProviderFactory defaultProviderFactory)
         {
