@@ -17,13 +17,14 @@ namespace Kull.Data.DataReader
 #pragma warning restore CA1010 // Collections should implement generic interface
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
-        private readonly IEnumerator<IDictionary<string, object>> baseValues;
+        private readonly IEnumerator<IReadOnlyDictionary<string, object?>> baseValues;
         private string[] names;
         private bool isClosed = false;
         private Type[]? types;
         private bool? firstRead = null;
 
         public override bool HasRows => (firstRead == null || firstRead == true);
+
 
         /// <summary>
         /// This creates a new ObjectDataReader
@@ -32,7 +33,7 @@ namespace Kull.Data.DataReader
         /// <param name="names">The names are available only after the first read which does sometimes make trouble.
         /// If you know the names before, set them here (alternatively pass a list)</param>
         /// <param name="deepTypeScan">Set this if you want to scan the whole list or as much as neccessary to get field types</param>
-        public ObjectDataReader(IEnumerable<IDictionary<string, object>> baseValues, string[]? names = null,
+        public ObjectDataReader(IEnumerable<IReadOnlyDictionary<string, object?>> baseValues, string[]? names = null,
                 bool deepTypeScan = false)
         {
             this.baseValues = baseValues.GetEnumerator();
@@ -58,9 +59,10 @@ namespace Kull.Data.DataReader
                         string key = names[i];
                         if (types[i] == null)
                         {
-                            if (item[key] != null && item[key] != DBNull.Value)
+                            var vl = item[key];
+                            if (vl != null && vl != DBNull.Value)
                             {
-                                types[i] = item[key].GetType();
+                                types[i] = vl.GetType();
                             }
                             else
                             {
@@ -148,7 +150,7 @@ namespace Kull.Data.DataReader
             return -1;
         }
 
-        public override object GetValue(int i)
+        public override object? GetValue(int i)
         {
             return this.baseValues.Current[names[i]];
         }

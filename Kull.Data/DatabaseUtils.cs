@@ -92,18 +92,15 @@ namespace Kull.Data
 
             string[] keys;
             PropertyInfo[]? properties = null;
-            IDictionary<string, object>? objectCol = null;
-            if (entity is IDictionary<string, object>)
+            IReadOnlyDictionary<string, object>? objectCol = null;
+            if (entity is IReadOnlyDictionary<string, object> oc1)
             {
-                objectCol = (IDictionary<string, object>)entity;
+                objectCol = oc1;
                 keys = objectCol.Keys.ToArray();
             }
-            else if (entity is IDictionary<string, string>)
+            else if (entity is IReadOnlyDictionary<string, string> strdict)
             {
-                var dict = ((IDictionary<string, string>)entity);
-                objectCol = new Dictionary<string, object>();
-                foreach (var item in dict)
-                    objectCol.Add(item.Key, item.Value);
+                objectCol = strdict.ToDictionary(k => k.Key, k => (object)k.Value);
                 keys = objectCol.Keys.ToArray();
             }
             else

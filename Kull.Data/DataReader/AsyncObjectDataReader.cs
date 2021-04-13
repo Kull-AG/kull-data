@@ -18,7 +18,7 @@ namespace Kull.Data.DataReader
 #pragma warning restore CA1710 // Identifiers should have correct suffix
 #pragma warning restore CA1010 // Collections should implement generic interface
     {
-        private readonly IAsyncEnumerator<IDictionary<string, object>> baseValues;
+        private readonly IAsyncEnumerator<IReadOnlyDictionary<string, object?>> baseValues;
         private string[]? names;
         private bool isClosed = false;
         private readonly Type[]? types;
@@ -34,7 +34,7 @@ namespace Kull.Data.DataReader
         /// <param name="baseValues">The values to base on</param>
         /// <param name="names">The names are available only after the first read which does sometimes make trouble.
         /// If you know the names before, set them here (alternatively pass a list)</param>
-        public AsyncObjectDataReader(IAsyncEnumerable<IDictionary<string, object>> baseValues, string[]? names = null)
+        public AsyncObjectDataReader(IAsyncEnumerable<IReadOnlyDictionary<string, object?>> baseValues, string[]? names = null)
         {
             this.baseValues = baseValues.GetAsyncEnumerator();
             if (names == null)

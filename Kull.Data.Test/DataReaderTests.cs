@@ -7,9 +7,9 @@ namespace Kull.Data.Test
     [TestClass]
     public class DataReaderTests
     {
-        public static List<IDictionary<string, object>> GetTestDataSet()
+        public static List<IReadOnlyDictionary<string, object>> GetTestDataSet()
         {
-            return new List<IDictionary<string, object>>()
+            return new List<IReadOnlyDictionary<string, object>>()
                 {
                 new Dictionary<string, object>()
                     {

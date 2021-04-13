@@ -52,10 +52,13 @@ namespace Kull.Data.DataReader
 
         public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
-            // TODO: Testing
             var vl = GetValue(i);
             byte[] bvl;
             if (vl == null)
+            {
+                bvl = new byte[0];
+            }
+            else if (vl == DBNull.Value)
             {
                 bvl = new byte[0];
             }
