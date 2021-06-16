@@ -26,8 +26,7 @@ namespace Kull.Data.Powershell
 
             }
             var factory = connStrEF.Provider != null ? DbProviderFactories.GetFactory(connStrEF.Provider) :
-                 !string.IsNullOrEmpty(Provider) ? DbProviderFactories.GetFactory(Provider) : null;
-            factory = factory ?? Microsoft.Data.SqlClient.SqlClientFactory.Instance;
+                 DbProviderFactories.GetFactory(!string.IsNullOrEmpty(Provider) ? Provider : "Microsoft.Data.SqlClient");
             var connection = factory.CreateConnection();
             connection.ConnectionString = connStrEF.ConnectionString;
             connection.Open();
