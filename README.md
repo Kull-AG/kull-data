@@ -65,3 +65,28 @@ We support the following prefixes:
 For [SQL Bulk Copy](https://docs.microsoft.com/de-de/dotnet/api/system.data.sqlclient.sqlbulkcopy?view=netframework-4.7.2) or other things it can
 be useful to pass C# Data as a DataReader. You can achieve that by using `Kull.Data.DataReader.ObjectDataReader`. If you need to add some columns 
 to a datareader, you can use `Kull.Data.DataReader.WrappedDataReader`.
+
+
+# Powershell Module
+
+You can use the Kull.Data.Powershell Module to use some simple cmdlets that allow for querying stored procedures(queries with parameters easily.
+
+```powershell
+Import-Module SqlServer # To load System.Data.SqlClient driver in Powershell 6.2+
+Import-Module Kull.Data.Powershell 
+$allAssemblies = [appdomain]::currentdomain.GetAssemblies() | ForEach-Object { [IO.Path]::GetFileName($_.Location) } # we try to be ready when SqlServer Module uses Microsoft.Data.SqlClient
+if($allAssemblies.Contains("System.Data.SqlClient.dll") -and -not $allAssemblies.Contains("Microsoft.Data.SqlClient.dll")){
+    $provider = "System.Data.SqlClient"
+} else {
+    $provider = "Microsoft.Data.SqlClient"
+}
+if($firstLoad -and $provider -eq "System.Data.SqlClient"){
+    [System.Data.Common.DbProviderFactories]::RegisterFactory($provider, [System.Data.SqlClient.SqlClientFactory]::Instance)
+}
+else {
+    [System.Data.Common.DbProviderFactories]::RegisterFactory($provider, [Microsoft.Data.SqlClient.SqlClientFactory]::Instance)
+}
+$sqlcon = Connect-Database $connectionstring $provider
+Send-DbCommand $sqlcon $commandText $parameters ([System.Data.CommandType]::StoredProcedure)
+# Or, use Receive-DbData to get result list
+```

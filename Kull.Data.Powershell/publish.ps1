@@ -35,7 +35,7 @@ $assembliesPlaceholder = "@('Assemblies')"
 $deployPath = [IO.Path]::Combine( (Get-Location).Path, "Deploy").Replace("\", "/") + "/"
 $names  = (Get-ChildItem Deploy *.dll -Recurse) | Select-Object @{ Name='prop'; Expression = { "'" + $_.FullName.Replace("\", "/").Substring($deployPath.Length) + "'" } } | Select-Object -ExpandProperty prop
 $psar = "@(" + [string]::Join(", ", $names) + ")"
-
+$psar = $psar.Replace(", 'System.Management.Automation.dll'", "")
 $cnt =  Get-Content Deploy/Kull.Data.Powershell.psd1 
 
 $cnt = $cnt.Replace($assembliesPlaceholder, $psar)
