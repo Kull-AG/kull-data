@@ -41,6 +41,7 @@ namespace Kull.Data.Powershell
                 var p = cmd.CreateParameter();
                 p.ParameterName = key.ToString().StartsWith("@") ? key.ToString() : "@" + key;
                 p.Value = Parameters[key] ?? DBNull.Value;
+                cmd.Parameters.Add(p);
             }
             WriteObject(cmd.ExecuteNonQuery());
         }

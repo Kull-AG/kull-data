@@ -43,7 +43,7 @@ namespace Kull.Data.EFFallback
         /// <summary>
         /// Returns true if Both, the provider and the ConnectionString Equal
         /// </summary>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is ParseEFResult res)
             {
