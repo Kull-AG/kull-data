@@ -123,15 +123,15 @@ namespace Kull.Data
             bool openBracket = false;
             foreach (char c in str!)
             {
-                if (c == '"')
+                if (c == '"' && !openBracket)
                 {
                     openQuote = !openQuote;
                 }
-                else if (c == '[')
+                else if (c == '[' && !openQuote)
                 {
                     openBracket = true;
                 }
-                else if (c == ']')
+                else if (c == ']' && !openQuote)
                 {
                     openBracket = false;
                 }

@@ -67,6 +67,16 @@ namespace Kull.Data.Test
             var tester3 = DBObjectName.FromString("[hallo bla]");
             var tester4 = DBObjectName.FromString("\"hallo bla\"");
             Assert.AreEqual(tester3, tester4);
+
+
+            var tester5 = DBObjectName.FromString("test.[hallo .- bla]");
+            Assert.AreEqual(tester5.Name, "hallo .- bla");
+            Assert.AreEqual(tester5.Schema, "test");
+
+
+            var tester6 = DBObjectName.FromString("test.\"asdf[hallo .- bla]f\"");
+            Assert.AreEqual(tester6.Name, "asdf[hallo .- bla]f");
+            Assert.AreEqual(tester6.Schema, "test");
         }
     }
 }

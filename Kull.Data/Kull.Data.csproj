@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Kull.Data Class Library</Description>
-    <Version>5.4.0</Version>
+    <Version>5.4.1</Version>
     <Authors>ehrsam</Authors>
     <TargetFrameworks>net47;netstandard2.0;netstandard2.1;net48</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
