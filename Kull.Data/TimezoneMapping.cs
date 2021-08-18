@@ -21,10 +21,6 @@ namespace Kull.Data
             { "Romance Standard Time", "Central Europe Standard Time" }
         };
 
-        internal static Func<string, TimeZoneInfo> GetTimeZoneInfo
-        {
-            get; set;
-        } = (s) => TimeZoneInfo.FindSystemTimeZoneById(s);
 
 
         /// <summary>
@@ -43,13 +39,17 @@ namespace Kull.Data
                 "UTC".Equals(value.Trim(), StringComparison.CurrentCultureIgnoreCase))
                 //For what ever reason this value is not recognized as a timezone
                 return TimeZoneInfo.Utc;
-            if(TimeZoneAliases.TryGetValue(value.Trim(), out var alias))
+            if (TimeZoneAliases.TryGetValue(value.Trim(), out var alias))
             {
                 return GetTimeZone(alias);
             }
             try
             {
+#if NET6_0 // In .Net 6 unix id's should work
+                return TimeZoneInfo.FindSystemTimeZoneById(value.Trim());
+#else
                 return TimeZoneConverter.TZConvert.GetTimeZoneInfo(value.Trim());
+#endif
             }
             catch (System.TimeZoneNotFoundException)
             {
@@ -62,16 +62,16 @@ namespace Kull.Data
                     }
                 }
                 //(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna
-                foreach(var st2 in sysTimeZones)
+                foreach (var st2 in sysTimeZones)
                 {
                     int utcOffSetDisplayIndex = st2.DisplayName.IndexOf(")");
                     if (utcOffSetDisplayIndex > 0)
                     {
-                        if(st2.DisplayName.Substring(0, utcOffSetDisplayIndex)==value.Substring(0, utcOffSetDisplayIndex))
+                        if (st2.DisplayName.Substring(0, utcOffSetDisplayIndex) == value.Substring(0, utcOffSetDisplayIndex))
                         {
                             string[] towns1 = st2.DisplayName.Substring(utcOffSetDisplayIndex + 1).Trim().Split(',').Select(s => s.Trim()).ToArray();
-                            string[] towns2 = value.Substring(utcOffSetDisplayIndex + 1).Trim().Split(',').Select(s=>s.Trim()).ToArray();
-                            if(towns1.Any(t=>towns2.Contains(t)))
+                            string[] towns2 = value.Substring(utcOffSetDisplayIndex + 1).Trim().Split(',').Select(s => s.Trim()).ToArray();
+                            if (towns1.Any(t => towns2.Contains(t)))
                             {
                                 return st2;
                             }

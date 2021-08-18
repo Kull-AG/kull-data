@@ -88,11 +88,10 @@ namespace Kull.Data.DataReader
             return (char)GetValue(i);
         }
 
-        public override long GetChars(int i, long fieldOffset, char[] buffer, int bufferoffset, int length)
+        public override long GetChars(int i, long fieldOffset, char[]? buffer, int bufferoffset, int length)
         {
             var strVl = GetString(i);
-
-            // TODO: Testing
+            if (buffer == null) return strVl.Length;
             int c = 0;
             for (int of = (int)fieldOffset; of < strVl.Length && c <= length; of++)
             {

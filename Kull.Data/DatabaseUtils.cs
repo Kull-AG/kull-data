@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using dt = System.Data;
 using dba = System.Data.Common;
-#if NETSTD
+#if NETSTD || NETCOREAPP
 using Microsoft.Extensions.Configuration;
 #endif
 
@@ -23,7 +23,7 @@ namespace Kull.Data
         /// <summary>
         /// Set this to true if you want to use Microsoft.Data.SqlClient for MSSQL
         /// </summary>
-        public static bool UseNewMSSqlClient { get; set; } = false;
+        public static bool UseNewMSSqlClient { get; set; } = true;
 
         /// <summary>
         /// Synchronously checks the connection to be open and if not open, opens it
@@ -118,7 +118,7 @@ namespace Kull.Data
 
             if (checkParameters)
             {
-                string[] parameters = GetSPParameters(cmd.CommandText, cmd.Connection, false);
+                string[] parameters = GetSPParameters(cmd.CommandText, cmd.Connection!, false);
                 foreach (var parameter in parameters)
                 {
                     foreach (var property in keys)
@@ -138,7 +138,7 @@ namespace Kull.Data
             {
                 foreach (var property in keys)
                 {
-                    var value = objectCol == null ? properties.First(s => s.Name == property).GetValue(entity, null) : objectCol[property];
+                    var value = objectCol == null ? properties!.First(s => s.Name == property).GetValue(entity, null) : objectCol[property];
                     AddCommandParameter(cmd, parameterPrefix + property, value);
                 }
             }
@@ -155,8 +155,8 @@ namespace Kull.Data
             var schemaParam = cmd.CreateParameter();
             schemaParam.Direction = ParameterDirection.Input;
             if (!name.StartsWith("@")
-#if NETSTD
-                && (cmd.GetType().FullName == "System.Data.SqlClient.SqlCommand")
+#if NETSTD || NETCOREAPP3_1_OR_GREATER 
+                && (cmd.GetType().FullName == "System.Data.SqlClient.SqlCommand" || cmd.GetType().FullName == "Microsoft.Data.SqlClient.SqlCommand")
 #else
                 && (cmd is System.Data.SqlClient.SqlCommand)
 #endif
@@ -213,6 +213,10 @@ namespace Kull.Data
             {
                 return (DbDataAdapter)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.SqlDataAdapter, System.Data.SqlClient", true), cmd);
             }
+            else if (cmd.GetType().FullName == "Microsoft.Data.SqlClient.SqlCommand")
+            {
+                return (DbDataAdapter)Activator.CreateInstance(Type.GetType("Microsoft.Data.SqlClient.SqlDataAdapter, Microsoft.Data.SqlClient", true), cmd);
+            }
             else if (cmd.GetType().FullName == "System.Data.SqlClient.OleDbCommand")
             {
                 return (DbDataAdapter)Activator.CreateInstance(Type.GetType("System.Data.SqlClient.OleDbCommand, System.Data.SqlClient", true), cmd);
@@ -223,9 +227,9 @@ namespace Kull.Data
             }
             throw new NotSupportedException("CommandType not supported. Create adapter manually");
 #else
-            var factory = dba.DbProviderFactories.GetFactory(cmd.Connection);
-            var adapt = factory.CreateDataAdapter();
-            adapt.SelectCommand = cmd;
+            var factory = dba.DbProviderFactories.GetFactory(cmd.Connection!);
+            var adapt = factory!.CreateDataAdapter();
+            adapt!.SelectCommand = cmd;
             return adapt;
 #endif
         }
@@ -383,7 +387,7 @@ namespace Kull.Data
         public static DbCommand CreateSPCommand(this DbConnection con, DBObjectName nameOfStoredProcedure)
         {
             var cmd = con.CreateCommand();
-            cmd.CommandText = nameOfStoredProcedure.ToString(false);
+            cmd.CommandText = nameOfStoredProcedure.ToString(false, true);
             cmd.CommandType = CommandType.StoredProcedure;
             return cmd;
         }
@@ -414,7 +418,7 @@ namespace Kull.Data
             bool checkParameters = true)
         {
             var cmd = con.CreateCommand();
-            cmd.CommandText = nameOfFunction.ToString(false);//We have to set this in order to make the next line work with checkPArameters
+            cmd.CommandText = nameOfFunction.ToString(false, true);//We have to set this in order to make the next line work with checkPArameters
             cmd.AddParametersFromEntity<TParam>(parameters, checkParameters);
             cmd.CommandType = CommandType.Text;
 
@@ -439,7 +443,7 @@ namespace Kull.Data
 
 
 
-            cmd.CommandText = "SELECT " + nameOfFunction.ToString(false) + "(" + string.Join(",", sparams) + ")";
+            cmd.CommandText = "SELECT " + nameOfFunction.ToString(false, true) + "(" + string.Join(",", sparams) + ")";
             using (var tbl = cmd.ExecuteReader())
             {
                 tbl.Read();
@@ -469,7 +473,7 @@ namespace Kull.Data
             bool checkParameters = true)
         {
             var cmd = con.CreateCommand();
-            cmd.CommandText = nameOfFunction.ToString(false);//We have to set this in order to make the next line work with checkPArameters
+            cmd.CommandText = nameOfFunction.ToString(false, true);//We have to set this in order to make the next line work with checkPArameters
             cmd.AddParametersFromEntity<TParam>(parameters, checkParameters);
             cmd.CommandType = CommandType.Text;
 
@@ -494,7 +498,7 @@ namespace Kull.Data
 
 
 
-            cmd.CommandText = "SELECT " + nameOfFunction.ToString(false) + "(" + string.Join(",", sparams) + ")";
+            cmd.CommandText = "SELECT " + nameOfFunction.ToString(false, true) + "(" + string.Join(",", sparams) + ")";
             using (var tbl = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
             {
                 tbl.Read();
@@ -548,9 +552,9 @@ namespace Kull.Data
                 throw new ArgumentException("Must provide a correct EF Connection string");
             }
 #if !NETSTD2
-            var factory = DbProviderFactories.GetFactory(connStrEF.Provider ?? defaultProviderName);//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
+            var factory = DbProviderFactories.GetFactory(connStrEF.Provider ?? defaultProviderName!);//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
             var connection = factory.CreateConnection();
-            connection.ConnectionString = connStrEF.ConnectionString;
+            connection!.ConnectionString = connStrEF.ConnectionString;
             return connection;
 #else 
             string? provider = connStrEF.Provider ?? defaultProviderName;
@@ -655,7 +659,7 @@ namespace Kull.Data
         [Obsolete("Use GetConnectionFromEnvironment(string, bool)")]
         public static DbConnection GetConnectionFromEnvironment(string configName) => GetConnectionFromEnvironment(configName, true, null)!;
 
-#if !NETSTD
+#if !NETSTD && !NETCOREAPP
         /// <summary>
         /// Gets a connection from a ConfigName. This will search in System.Configuration.ConfigurationManager.ConnectionStrings
         /// and System.Configuration.ConfigurationManager.AppSettings for any valid Entity Framework or Sql Server connection string
@@ -711,7 +715,7 @@ namespace Kull.Data
         /// <returns></returns>
         public static DbConnection GetConnectionFromConfig(string configName, DbProviderFactory defaultProviderFactory)
         {
-#if !NETSTD
+#if !NETSTD && !NETCOREAPP
             if (System.Configuration.ConfigurationManager.ConnectionStrings[configName] != null)
             {
                 return GetConnectionFromEFString(System.Configuration.ConfigurationManager.ConnectionStrings[configName].ConnectionString, defaultProviderFactory);

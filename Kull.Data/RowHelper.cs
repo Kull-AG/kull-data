@@ -336,10 +336,10 @@ namespace Kull.Data
 
             foreach (var property in infos)
             {
-                this.SetPropertyInfo(property.PropertyInfo, toSet, property.FieldIndex);
+                this.SetPropertyInfo(property.PropertyInfo, toSet!, property.FieldIndex);
 
             }
-            return toSet;
+            return toSet!;
         }
 
         private ToSetInfo[]? cached_infos;
@@ -387,7 +387,7 @@ namespace Kull.Data
                     return i;
                 if (val == null)
                     return null;
-                return int.Parse(val.ToString());
+                return int.Parse(val.ToString()!);
             }
             else
                 return null;
@@ -411,7 +411,7 @@ namespace Kull.Data
                 if (val == null)
                     return null;
 #if !NET35
-                return Guid.Parse(val.ToString());
+                return Guid.Parse(val.ToString()!);
 #else
                 throw new PlatformNotSupportedException("To use GUID Parsing, use .Net 45+");
 #endif
@@ -438,7 +438,7 @@ namespace Kull.Data
                     return i;
                 if (val == null)
                     return null;
-                return long.Parse(val.ToString());
+                return long.Parse(val.ToString()!);
             }
             else
                 return null;
@@ -529,7 +529,7 @@ namespace Kull.Data
                     return d;
                 if (val == null)
                     return null;
-                return double.Parse(val.ToString());
+                return double.Parse(val.ToString()!);
             }
             return null;
         }
@@ -547,7 +547,7 @@ namespace Kull.Data
                         return d;
                     if (val == null)
                         return null;
-                    return double.Parse(val.ToString());
+                    return double.Parse(val.ToString()!);
                 }
             }
             return null;
@@ -559,7 +559,7 @@ namespace Kull.Data
             object val = GetValue(fieldIndex)!;
             if (val is decimal d)
                 return d;
-            return decimal.Parse(val.ToString());
+            return decimal.Parse(val.ToString()!);
         }
         public decimal GetDecimalFieldValue(string columnName) => GetDecimalFieldValue(GetOrdinal(columnName));
 
@@ -572,7 +572,7 @@ namespace Kull.Data
                     return d;
                 if (val == null)
                     return null;
-                return decimal.Parse(val.ToString());
+                return decimal.Parse(val.ToString()!);
             }
             return null;
         }
@@ -583,7 +583,7 @@ namespace Kull.Data
             object val = GetValue(fieldIndex)!;
             if (val is short d)
                 return d;
-            return short.Parse(val.ToString());
+            return short.Parse(val.ToString()!);
         }
         public short GetInt16FieldValue(string columnName) => GetInt16FieldValue(GetOrdinal(columnName));
 
@@ -597,7 +597,7 @@ namespace Kull.Data
                     return d;
                 if (val == null)
                     return null;
-                return short.Parse(val.ToString());
+                return short.Parse(val.ToString()!);
             }
             return null;
         }
@@ -608,7 +608,7 @@ namespace Kull.Data
             object val = GetValue(fieldIndex)!;
             if (val is double d)
                 return d;
-            return double.Parse(val.ToString());
+            return double.Parse(val.ToString()!);
         }
         public double GetDoubleFieldValue(string columnName) => GetDoubleFieldValue(GetOrdinal(columnName));
 
@@ -624,7 +624,7 @@ namespace Kull.Data
             {
                 throw new ArgumentNullException($"Field with index {fieldIndex} may not be null");
             }
-            string toParse = vl.ToString();
+            string toParse = vl.ToString()!;
             return int.Parse(toParse);
         }
         public int GetIntFieldValue(string columnName) => GetIntFieldValue(GetOrdinal(columnName));
@@ -637,7 +637,7 @@ namespace Kull.Data
                 return l;
             else if (val is int i)
                 return i;
-            string toParse = val.ToString();
+            string toParse = val.ToString()!;
             return long.Parse(toParse);
         }
         public long GetLongFieldValue(string columnName) => GetLongFieldValue(GetOrdinal(columnName));
@@ -676,7 +676,7 @@ namespace Kull.Data
                     return d;
                 if (val == null)
                     return null;
-                return DateTime.Parse(val.ToString());
+                return DateTime.Parse(val!.ToString()!);
             }
             else
                 return null;
@@ -699,7 +699,7 @@ namespace Kull.Data
                 return b;
             if (val == null)
                 return null;
-            return Convert.FromBase64String(val.ToString());
+            return Convert.FromBase64String(val.ToString()!);
         }
         public byte[]? GetByteValue(string columnName) => GetByteValue(GetOrdinal(columnName));
 
@@ -709,7 +709,7 @@ namespace Kull.Data
             object valueO = GetValue(fieldIndex)!;
             if (valueO is bool)
                 return (bool)valueO;
-            string value = valueO.ToString().Trim();
+            string value = valueO.ToString()!.Trim();
             if (value == "1")
                 return true;
             else if (value == "0")
@@ -754,7 +754,7 @@ namespace Kull.Data
                     return i;
                 else
                 {
-                    string value = val.ToString();
+                    string value = val.ToString()!;
                     return TimezoneMapping.GetTimeZone(value);
                 }
             }
@@ -781,7 +781,7 @@ namespace Kull.Data
                 }
                 else
                 {
-                    var dateTime = DateTime.Parse(value.ToString());
+                    var dateTime = DateTime.Parse(value.ToString()!);
                     return new DateTimeOffset(dateTime, this.DefaultTimeZone?.GetUtcOffset(dateTime) ?? TimeSpan.Zero);
                 }
             }

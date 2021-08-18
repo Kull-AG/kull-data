@@ -11,16 +11,6 @@ namespace Kull.Data
     [System.Diagnostics.Contracts.Pure]
     public class DBObjectName : IComparable
     {
-        private static string defaultSchema = "dbo";
-
-        /// <summary>
-        /// Default Schema for Tool Tables. Default is "dbo"
-        /// </summary>
-        public static string DefaultSchema
-        {
-            get { return defaultSchema; }
-            set { defaultSchema = value; }
-        }
 
         private readonly string? dbName;
 
@@ -32,15 +22,15 @@ namespace Kull.Data
             get { return dbName; }
         }
 
-        private readonly string schema;
+        private readonly string? schema;
         /// <summary>
         /// Name of the Schema
         /// </summary>
-        public string Schema
+        public string? Schema
         {
             get
             {
-                return schema ?? DBObjectName.DefaultSchema;
+                return schema;
             }
         }
 
@@ -57,7 +47,7 @@ namespace Kull.Data
         /// <param name="schema"></param>
         /// <param name="name"></param>
         /// <param name="db"></param>
-        public DBObjectName(string schema, string name, string? db = null)
+        public DBObjectName(string? schema, string name, string? db = null)
         {
             this.dbName = db;
             this.schema = schema;
@@ -70,19 +60,30 @@ namespace Kull.Data
         /// <returns></returns>
         public override string ToString()
         {
-            return Schema + "." + Name;
+            return (Schema == null ? Name : Schema + "." + Name);
+        }
+
+        private static string QuoteName(string input)
+        {
+            if (input.Contains(" ") || input.Contains("\"") || input.Contains("[") || input.Contains("]"))
+                return input.Replace("\"", "\"\"");
+            return input;
         }
 
         /// <summary>
         /// Returns Databasename.schema.name
         /// </summary>
         /// <param name="withDatabase">Whether to include the Databasename or not</param>
+        /// <param name="quote">Quote if required</param>
         /// <returns>Databasename.schema.name or schema.name</returns>
-        public string ToString(bool withDatabase)
+        public string ToString(bool withDatabase, bool quote)
         {
-            if (withDatabase && DataBaseName != null)
-                return DataBaseName + "." + ToString();
-            return ToString();
+
+            if (withDatabase && DataBaseName != null && Schema != null)
+                return quote ? QuoteName(DataBaseName) + "." + QuoteName(Schema) + "." + QuoteName(Name) :
+                        DataBaseName + "." + Schema + "." + Name;
+            return quote ? (Schema == null ? "" : (QuoteName(Schema) + ".")) + QuoteName(Name) :
+                       (Schema == null ? Name : (Schema + "." + Name));
         }
 
         /// <summary>
@@ -91,7 +92,7 @@ namespace Kull.Data
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return ToString(true).ToLower().GetHashCode();
+            return ToString(true, true).ToLower().GetHashCode();
         }
 
         /// <summary>
@@ -99,11 +100,11 @@ namespace Kull.Data
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is DBObjectName obj2)
             {
-                return obj2.ToString(true).ToLower() == this.ToString(true).ToLower();
+                return obj2.DataBaseName == this.DataBaseName && obj2.Schema == this.Schema && obj2.Name == this.Name;
             }
             return base.Equals(obj);
         }
@@ -156,7 +157,7 @@ namespace Kull.Data
                 throw new ArgumentException("Invalid db object name");
             if (parts.Count == 1)
             {
-                return new DBObjectName(DBObjectName.DefaultSchema, parts[0]);
+                return new DBObjectName(null, parts[0]);
             }
             else if (parts.Count == 2)
             {
@@ -221,11 +222,11 @@ namespace Kull.Data
                 return -1;
             if (obj is DBObjectName name)
             {
-                return this.ToString(true).ToLower().CompareTo(name.ToString(true).ToLower());
+                return this.ToString(true, false).ToLower().CompareTo(name.ToString(true, false).ToLower());
             }
             else
             {
-                return this.ToString(true).ToLower().CompareTo(obj.ToString());
+                return this.ToString(true, false).ToLower().CompareTo(obj.ToString());
             }
         }
 

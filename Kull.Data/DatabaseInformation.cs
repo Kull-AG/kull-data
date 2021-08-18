@@ -106,7 +106,7 @@ namespace Kull.Data
 
             string command = @"SELECT PARAMETER_NAME 
 FROM information_schema.parameters 
-WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>''";
+WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=COALESCE(@Schema, SCHEMA_NAME()) AND PARAMETER_NAME<>''";
             if (this.Connection.State == ConnectionState.Closed)
             {
                 this.Connection.Open();
@@ -114,7 +114,7 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>'
             DbCommand cmd = this.Connection.CreateCommand();
             cmd.CommandText = command;
             cmd.AddCommandParameter("@SPName", storedProcedure.Name)
-                .AddCommandParameter("@Schema", storedProcedure.Schema ?? DBObjectName.DefaultSchema);
+                .AddCommandParameter("@Schema", storedProcedure.Schema);
             List<string> resultL = new List<string>();
 
             using (var reader = cmd.ExecuteReader())
@@ -155,7 +155,7 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>'
 
             string command = @"SELECT PARAMETER_NAME 
 FROM information_schema.parameters 
-WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>''";
+WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=COALESCE(@Schema, SCHEMA_NAME()) AND PARAMETER_NAME<>''";
             if (this.Connection.State == ConnectionState.Closed)
             {
                 this.Connection.Open();
@@ -163,7 +163,7 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>'
             DbCommand cmd = this.Connection.CreateCommand();
             cmd.CommandText = command;
             cmd.AddCommandParameter("@SPName", storedProcedure.Name)
-                .AddCommandParameter("@Schema", storedProcedure.Schema ?? DBObjectName.DefaultSchema);
+                .AddCommandParameter("@Schema", storedProcedure.Schema);
             List<string> resultL = new List<string>();
 
             using (var reader = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
@@ -193,7 +193,9 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=@Schema AND PARAMETER_NAME<>'
         /// <param name="cmd"></param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100")]
         public static void CreateProcedureIfNotExists(DbCommand cmd)
-        {//TODO: Testing
+        {
+            if (cmd.Connection == null)
+                throw new NullReferenceException("cmd.Connection must not be null");
 
             var dbi = new DatabaseInformation(cmd.Connection);
             if (!dbi.GetAllStoredProcedures().Contains(cmd.CommandText))
@@ -249,7 +251,7 @@ END";
                 var execCmd = cmd.Connection.CreateCommand();
 
                 execCmd.CommandText = sql;
-                if (execCmd.Connection.State == ConnectionState.Closed)
+                if (execCmd.Connection!.State == ConnectionState.Closed)
                     execCmd.Connection.Open();
                 execCmd.ExecuteNonQuery();
             }
