@@ -95,7 +95,7 @@ namespace Kull.Data
         /// <returns></returns>
         public string[] GetSPParameters(DBObjectName storedProcedure, bool doNoUseCachedResults = false)
         {
-            if (!doNoUseCachedResults && spParameters.TryGetValue(storedProcedure.ToString(), out string[] spPrms))
+            if (!doNoUseCachedResults && spParameters.TryGetValue(storedProcedure.ToString(), out string[]? spPrms))
                 return spPrms;
             string[]? oldValue;
             if (!spParameters.TryGetValue(storedProcedure.ToString(), out oldValue))
@@ -144,7 +144,7 @@ WHERE SPECIFIC_NAME = @SPName  AND SPECIFIC_SCHEMA=COALESCE(@Schema, SCHEMA_NAME
         /// <returns></returns>
         public async Task<string[]> GetSPParametersAsync(DBObjectName storedProcedure, bool doNoUseCachedResults = false)
         {
-            if (!doNoUseCachedResults && spParameters.TryGetValue(storedProcedure.ToString(), out string[] spPrms))
+            if (!doNoUseCachedResults && spParameters.TryGetValue(storedProcedure.ToString(), out string[]? spPrms))
                 return spPrms;
             string[]? oldValue;
             if (!spParameters.TryGetValue(storedProcedure.ToString(), out oldValue))

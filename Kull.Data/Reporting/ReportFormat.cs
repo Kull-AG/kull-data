@@ -103,10 +103,10 @@ namespace Kull.Data.Reporting
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is ReportFormat)
-                return Equals((ReportFormat)obj);
+            if (obj is ReportFormat f)
+                return Equals(f);
             return base.Equals(obj);
         }
 

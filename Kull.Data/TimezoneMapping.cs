@@ -46,6 +46,11 @@ namespace Kull.Data
             try
             {
 #if NET6_0 // In .Net 6 unix id's should work
+
+                if (System.Environment.OSVersion.Platform == PlatformID.Win32NT && TimeZoneInfo.TryConvertIanaIdToWindowsId(value.Trim(), out string? winId))
+                    return TimeZoneInfo.FindSystemTimeZoneById(winId);
+                if (System.Environment.OSVersion.Platform == PlatformID.Unix && TimeZoneInfo.TryConvertWindowsIdToIanaId(value.Trim(), out string? ianaId))
+                    return TimeZoneInfo.FindSystemTimeZoneById(ianaId);
                 return TimeZoneInfo.FindSystemTimeZoneById(value.Trim());
 #else
                 return TimeZoneConverter.TZConvert.GetTimeZoneInfo(value.Trim());

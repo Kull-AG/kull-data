@@ -44,7 +44,7 @@ namespace Kull.Data.EFFallback
         public static string CreateEF(string providerName, string connectionString)
         {
             var parts = Parse(connectionString);
-            if (parts.TryGetValue("provider", out string prov) && !string.IsNullOrEmpty(prov))
+            if (parts.TryGetValue("provider", out string? prov) && !string.IsNullOrEmpty(prov))
             {
                 return connectionString; // It is already an ef connction string
             }

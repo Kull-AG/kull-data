@@ -15,7 +15,7 @@ namespace Kull.Data.Test
                 .SetParameter("Test2", "_no_random_value")
                 .SetParameter("Test3", 234);
             rc.ReportFormat = Reporting.ReportFormat.Excel;
-            var url = rc.GetUrl();
+            var url = rc.GetUrl().ToString();
             Assert.IsTrue(url.Contains("_no_random_value"));
             Assert.IsTrue(url.Contains("EXCELOPENXML"));
             Assert.IsFalse(url.Contains("hello"));

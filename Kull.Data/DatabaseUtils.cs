@@ -173,7 +173,7 @@ namespace Kull.Data
             if (checkParameters)
             {
 
-                string[] parameters = GetSPParameters(cmd.CommandText, cmd.Connection);
+                string[] parameters = GetSPParameters(cmd.CommandText, cmd.Connection!);
                 if (!parameters.Contains(name, StringComparer.CurrentCultureIgnoreCase))
                     return cmd;
             }
@@ -256,7 +256,7 @@ namespace Kull.Data
         [Obsolete("Use DbDataReader instead")]
         public static async Task<dt.DataTable> ReadAsTableAsync(this DbCommand cmd)
         {
-            if (cmd.Connection.State == ConnectionState.Closed)
+            if (cmd.Connection!.State == ConnectionState.Closed)
             {
                 await cmd.Connection.OpenAsync().ConfigureAwait(false);
             }
@@ -530,7 +530,7 @@ namespace Kull.Data
             }
             var factory = connStrEF.Provider != null ? DbProviderFactories.GetFactory(connStrEF.Provider) : defaultProvider;//Gets the correct provider (usually System.Data.SqlClient.SqlClientFactory)
             var connection = factory.CreateConnection();
-            connection.ConnectionString = connStrEF.ConnectionString;
+            connection!.ConnectionString = connStrEF.ConnectionString;
             return connection;
         }
 #endif
@@ -625,7 +625,7 @@ namespace Kull.Data
             };
             foreach (var item in nameTypeMap)
             {
-                string val = Environment.GetEnvironmentVariable(item.Key + configName);
+                string? val = Environment.GetEnvironmentVariable(item.Key + configName);
                 if (val != null)
                 {
 #if !NETSTD2
@@ -752,7 +752,7 @@ namespace Kull.Data
         public static T[] AsArrayOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
         where T : class, new()
         {
-            cmd.Connection.AssureOpen();
+            cmd.Connection!.AssureOpen();
             using (var rdr = cmd.ExecuteReader())
             {
                 return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns);
@@ -770,7 +770,7 @@ namespace Kull.Data
         public static async Task<T[]> AsArrayOfAsync<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
             where T : class, new()
         {
-            await cmd.Connection.AssureOpenAsync().ConfigureAwait(false);
+            await cmd.Connection!.AssureOpenAsync().ConfigureAwait(false);
             using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
             {
                 return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns);

@@ -12,20 +12,12 @@ namespace Kull.Data.Reporting
     /// </summary>
     public class ReportCall
     {
-        /// <summary>
-        /// The url of the server to be used by default
-        /// </summary>
-        public static string? DefaultReportServerUrl { get; set; }
 
-        /// <summary>
-        /// Wheter or not a server supports by default Office 2007 Formats
-        /// </summary>
-        public static bool DefaultSupports2007Formats { get; set; } = true;
 
         /// <summary>
         /// Set this boolean to false if you do not want to make exports to EXCELOPENXML (.xlsx) or to WORDOPENXML (.docx) but to EXCEL (.xls) or to WORD(.doc)
         /// </summary>
-        public bool Support2007Formats { get; set; }
+        public bool Support2007Formats { get; set; } = true;
 
         /// <summary>
         /// Creates a new instance for Calling a Report
@@ -33,18 +25,18 @@ namespace Kull.Data.Reporting
         public ReportCall()
         {
             this.ReportFormat = ReportFormat.Html;
-            this.Support2007Formats = DefaultSupports2007Formats;
-            this.reportServerURL = DefaultReportServerUrl;
         }
 
         /// <summary>
         ///  Creates a new instance for Calling a Report with a name
         /// </summary>
         /// <param name="name">The name of the report</param>
-        public ReportCall(string name)
+        /// <param name="serverUrl">The url to the server</param>
+        public ReportCall(string serverUrl, string name)
             : this()
         {
             this.ReportName = name;
+            this.reportServerURL = serverUrl;
         }
 
         private string? reportServerURL;
@@ -52,7 +44,7 @@ namespace Kull.Data.Reporting
         /// <summary>
         /// The Url of the location of the reports
         /// </summary>
-        /// <example>https://sharepoint2010.kull.ch/sites/finma/Reports/
+        /// <example>https://sharepoint2010.kull.ch/sites/bla/Reports/
         /// </example>
         public string? ReportServerURL
         {
@@ -72,12 +64,12 @@ namespace Kull.Data.Reporting
             set { reportName = value; }
         }
 
-        private Dictionary<string, object> parameters = new Dictionary<string, object>();
+        private Dictionary<string, object?> parameters = new(StringComparer.InvariantCultureIgnoreCase);
 
         /// <summary>
         /// Returns all parameters. You usually do not want to manipulate parameters through this collection but through SetParameter
         /// </summary>
-        public IDictionary<string, object> Parameters
+        public IDictionary<string, object?> Parameters
         {
             get { return parameters; }
         }
@@ -92,7 +84,7 @@ namespace Kull.Data.Reporting
         /// </summary>
         /// <param name="key">The Key to set</param>
         /// <param name="value">The value to set</param>
-        public ReportCall SetParameter(string key, object value)
+        public ReportCall SetParameter(string key, object? value)
         {
             if (Parameters.ContainsKey(key))
                 Parameters[key] = value;
@@ -124,7 +116,7 @@ namespace Kull.Data.Reporting
         /// <summary>
         /// Gets the url as a string. You can use ToString as well for this
         /// </summary>
-        public string GetUrl()
+        public Uri GetUrl()
 #pragma warning restore CA1055 // Uri return values should not be strings
         {
 
@@ -154,18 +146,7 @@ namespace Kull.Data.Reporting
                     AddReportParameter(ref url, parameter.Key, parameter.Value);
                 }
             }
-            return url;
-        }
-
-        /// <summary>
-        /// Downloads the Report in binary form
-        /// </summary>
-        /// <returns></returns>
-        public byte[] Download()
-        {
-            var url = this.GetUrl();
-            var cl = new System.Net.WebClient();
-            return cl.DownloadData(url);
+            return new Uri(url, UriKind.Absolute);
         }
 
         /// <summary>
@@ -275,7 +256,7 @@ namespace Kull.Data.Reporting
             else
             {
                 string? strValue = GetStringOfValue(value)??"";
-                url += String.Format("{0}={1}", paramPrefix + name, System.Uri.EscapeUriString(strValue));
+                url += String.Format("{0}={1}", paramPrefix + name, System.Uri.EscapeDataString(strValue));
 
             }
 
@@ -287,7 +268,7 @@ namespace Kull.Data.Reporting
         /// <returns></returns>
         public override string ToString()
         {
-            return GetUrl();
+            return GetUrl().ToString();
         }
 
         /// <summary>

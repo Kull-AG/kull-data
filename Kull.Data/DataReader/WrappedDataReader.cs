@@ -183,7 +183,7 @@ namespace Kull.Data.DataReader
             return IsBaseColumn(i) ? baseReader.GetChar(i) : (char)GetValue(i);
         }
 
-        public override long GetChars(int i, long fieldOffset, char[] buffer, int bufferoffset, int length)
+        public override long GetChars(int i, long fieldOffset, char[]? buffer, int bufferoffset, int length)
         {
             if (IsBaseColumn(i))
                 return baseReader.GetChars(i, fieldOffset, buffer, bufferoffset, length);
