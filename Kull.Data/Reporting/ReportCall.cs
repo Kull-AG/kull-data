@@ -146,6 +146,7 @@ namespace Kull.Data.Reporting
                     AddReportParameter(ref url, parameter.Key, parameter.Value);
                 }
             }
+            if (string.IsNullOrEmpty(ReportServerURL) && !url.Contains("://")) return new Uri(url, UriKind.Relative);
             return new Uri(url, UriKind.Absolute);
         }
 

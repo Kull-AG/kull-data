@@ -69,12 +69,9 @@ namespace Kull.Data
         /// <param name="dt"></param>
         /// <param name="ignoreMissingColumns"></param>
         /// <returns></returns>
-        [Obsolete("Use DbReader instead")]
         public static T[] FromTable<T>(dt.DataTable dt, bool ignoreMissingColumns = false) where T : new()
         {
             T[] toReturn = new T[dt.Rows.Count];
-
-
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 toReturn[i] = FromRow(dt.Rows[i], new T(), ignoreMissingColumns);
@@ -89,20 +86,21 @@ namespace Kull.Data
         /// <param name="dt"></param>
         /// <param name="ignoreMissingColumns"></param>
         /// <returns></returns>
-        public static T[] FromTable<T>(IDataReader dt, bool ignoreMissingColumns = false) where T : new()
+        public static T[] FromTable<T>(IDataReader dt, bool ignoreMissingColumns = false)
         {
             var rh = new RowHelper(dt);
             rh.IgnoreMissingColumns = ignoreMissingColumns;
             var type = typeof(T);
-            var infos = rh.GetInfos(type);
 
+            var infos = rh.GetInfos(type);
             List<T> toReturn = new List<T>();
             while (dt.Read())
             {
-                toReturn.Add((T)rh.FromRow(new T(), type, infos));
+                toReturn.Add((T)rh.FromRow(null, type, infos));
             }
             return toReturn.ToArray();
         }
+
 
         /// <summary>
         /// Gets the value from the row
@@ -148,6 +146,129 @@ namespace Kull.Data
             return (T)FromRow(toSet, typeof(T));
         }
 
+        private bool TryGetValue(string propName, Type propertyType, int fieldIndex, out object? value)
+        {
+            if (propertyType == (typeof(int?)))
+            {
+                value =  GetNIntFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(int))
+            {
+                value =  GetIntFieldValue(fieldIndex);
+            }
+            else if (propertyType == (typeof(System.Nullable<long>)))
+            {
+                value =  GetNLongFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(long))
+            {
+                value =  GetLongFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(System.Nullable<double>))
+            {
+                value =  GetNDoubleFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(DateTimeOffset))
+            {
+                value =  GetDateTimeOffsetFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(DateTimeOffset?))
+            {
+                value =  GetDateTimeOffsetFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(TimeZoneInfo))
+            {
+                value = 
+                    GetTimeZoneFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(double))
+            {
+                value =  GetDoubleFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(string))
+            {
+                value =  GetStringFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(DateTime?))
+            {
+                value =  GetDateTimeFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(DateTime))
+            {
+                value =  GetDateTimeFieldValue(fieldIndex)!.Value;
+            }
+            else if (propertyType == typeof(System.Drawing.Color?))
+            {
+                value =  GetColorFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(System.Drawing.Color))
+            {
+                value =  GetColorFieldValue(fieldIndex)!.Value;
+            }
+            else if (propertyType == typeof(byte[]))
+            {
+                value =  GetByteValue(fieldIndex);
+            }
+            else if (propertyType == typeof(bool?))
+            {
+                value =  GetNBoolValue(fieldIndex);
+            }
+            else if (propertyType == typeof(bool))
+            {
+                value =  GetBoolValue(fieldIndex);
+            }
+            else if (propertyType == typeof(System.Nullable<byte>))
+            {
+                int? intValue = GetNIntFieldValue(fieldIndex);
+                if (intValue == null)
+                {
+                    value =  null;
+                }
+                else
+                { value =  (byte)intValue; }
+            }
+            else if (propertyType == typeof(byte))
+            {
+                value =  (byte)GetIntFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(Guid?))
+            {
+                value =  GetNGuidFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(Guid))
+            {
+                value =  (Guid)GetNGuidFieldValue(fieldIndex)!;
+            }
+            else if (propertyType == typeof(decimal?))
+            {
+                value =  GetNDecimalFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(decimal))
+            {
+                value =  GetDecimalFieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(short?))
+            {
+                value =  GetNInt16FieldValue(fieldIndex);
+            }
+            else if (propertyType == typeof(short))
+            {
+                value =  GetInt16FieldValue(fieldIndex);
+            }
+            else if (
+                   propertyType.IsGenericType
+                || propertyType.IsArray)
+            {//Generic types and array cannot be set by design an therefore we do not set them
+                value = null;
+                return false;
+            }
+            else
+            {
+                throw new ArgumentException("Property " + propName + " is of type " + propertyType.Name + " which is not allowed");
+            }
+            return true;
+        }
+
         /// <summary>
         /// Sets the property of an object by using the Value from the given Column in the DataRow.
         /// Throws ArgumentException for unknown property types
@@ -158,149 +279,106 @@ namespace Kull.Data
         /// <returns>true for success, false for arrays and most generics</returns>
         public bool SetPropertyInfo(PropertyInfo property, Object toSet, int fieldIndex)
         {
-
-            if (property.PropertyType == (typeof(int?)))
+            if(TryGetValue(property.Name, property.PropertyType, fieldIndex, out var value))
             {
-                property.SetValue(toSet, GetNIntFieldValue(fieldIndex), null);
+                property.SetValue(toSet, value, null);
+                return true;
             }
-            else if (property.PropertyType == typeof(int))
-            {
-                property.SetValue(toSet, GetIntFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == (typeof(System.Nullable<long>)))
-            {
-                property.SetValue(toSet, GetNLongFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(long))
-            {
-                property.SetValue(toSet, GetLongFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(System.Nullable<double>))
-            {
-                property.SetValue(toSet, GetNDoubleFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(DateTimeOffset))
-            {
-                property.SetValue(toSet, GetDateTimeOffsetFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(DateTimeOffset?))
-            {
-                property.SetValue(toSet, GetDateTimeOffsetFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(TimeZoneInfo))
-            {
-                property.SetValue(toSet,
-                    GetTimeZoneFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(double))
-            {
-                property.SetValue(toSet, GetDoubleFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(string))
-            {
-                property.SetValue(toSet, GetStringFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(DateTime?))
-            {
-                property.SetValue(toSet, GetDateTimeFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(DateTime))
-            {
-                property.SetValue(toSet, GetDateTimeFieldValue(fieldIndex)!.Value, null);
-            }
-            else if (property.PropertyType == typeof(System.Drawing.Color?))
-            {
-                property.SetValue(toSet, GetColorFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(System.Drawing.Color))
-            {
-                property.SetValue(toSet, GetColorFieldValue(fieldIndex)!.Value, null);
-            }
-            else if (property.PropertyType == typeof(byte[]))
-            {
-                property.SetValue(toSet, GetByteValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(bool?))
-            {
-                property.SetValue(toSet, GetNBoolValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(bool))
-            {
-                property.SetValue(toSet, GetBoolValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(System.Nullable<byte>))
-            {
-                int? value = GetNIntFieldValue(fieldIndex);
-                if (value == null)
-                {
-                    property.SetValue(toSet, null, null);
-                }
-                else
-                { property.SetValue(toSet, (byte)value, null); }
-            }
-            else if (property.PropertyType == typeof(byte))
-            {
-                property.SetValue(toSet, (byte)GetIntFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(Guid?))
-            {
-                property.SetValue(toSet, GetNGuidFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(Guid))
-            {
-                property.SetValue(toSet, (Guid)GetNGuidFieldValue(fieldIndex)!, null);
-            }
-            else if (property.PropertyType == typeof(decimal?))
-            {
-                property.SetValue(toSet, GetNDecimalFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(decimal))
-            {
-                property.SetValue(toSet, GetDecimalFieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(short?))
-            {
-                property.SetValue(toSet, GetNInt16FieldValue(fieldIndex), null);
-            }
-            else if (property.PropertyType == typeof(short))
-            {
-                property.SetValue(toSet, GetInt16FieldValue(fieldIndex), null);
-            }
-            else if (
-                   property.PropertyType.IsGenericType
-                || property.PropertyType.IsArray)
-            {//Generic types and array cannot be set by design an therefore we do not set them
-                return false;
-            }
-            else
-            {
-                throw new ArgumentException("Property " + property.Name + " is of type " + property.PropertyType.Name + " which is not allowed");
-            }
-            return true;
+            return false;
         }
 
-        private struct ToSetInfo
+        private struct SetInfo
         {
-            public readonly PropertyInfo PropertyInfo;
+            public readonly MemberSetInfo[] PropertySetInfo;
+            public readonly ConstructorInfo? constructorInfo;
+
+            public readonly bool IsRecord { get; }
+
+            public SetInfo(MemberSetInfo[] propertySetInfos)
+            {
+                this.IsRecord = false;
+                this.PropertySetInfo = propertySetInfos;
+                this.constructorInfo = null;
+            }
+
+            public SetInfo(MemberSetInfo[] propertySetInfos, ConstructorInfo constructorInfo)
+            {
+                this.IsRecord = true;
+                this.PropertySetInfo = propertySetInfos;
+                this.constructorInfo = constructorInfo;
+            }
+        }
+
+
+        private struct MemberSetInfo
+        {
+            public readonly Type Type;
+            public readonly string Name;
             public readonly int FieldIndex;
+            public readonly bool NoSource=false;
+            public Action<object, object?> SetValue;
 
-            public ToSetInfo(PropertyInfo property, int fieldIndex)
+            public MemberSetInfo(PropertyInfo property, int fieldIndex, Action<object, object?> setValue)
             {
-                this.PropertyInfo = property;
+                this.Type = property.PropertyType;
+                this.Name = property.Name;
                 this.FieldIndex = fieldIndex;
+                this.SetValue = setValue;
+            }
+
+            public MemberSetInfo(ParameterInfo property, int fieldIndex, bool noSource)
+            {
+                this.Type = property.ParameterType;
+                this.Name = property.Name;
+                this.FieldIndex = fieldIndex;
+                this.NoSource = noSource;
+                this.SetValue = null;
             }
         }
 
 
-        private ToSetInfo[] GetInfos(Type type)
+        private SetInfo GetInfos(Type type)
         {
-            BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
+            bool isRecord = !type.GetConstructors().Any(c => !c.GetParameters().Any());
+            if (isRecord)
+            {
+                var constructor = type.GetConstructors().OrderByDescending(c => c.GetParameters().Count()).First();
 
-            var properties = type.GetProperties(flags)
+                var prms = constructor.GetParameters().ToArray();
+
+                var prmInfos = prms.Select(p =>
+                {
+                    var attributes = p.GetCustomAttributes(typeof(SourceColumnAttribute), true).Cast<SourceColumnAttribute>().ToArray();
+                    return new { ParameterInfo = p, Attrs = attributes.Length > 0 ? attributes[0] : null };
+                })
+                // Get column name
+                .Select(p => new { p.ParameterInfo, p.Attrs, ColumnName = p.Attrs?.ColumnName ?? p.ParameterInfo!.Name })
+                .Select(p =>
+                {
+                    bool noSource = p.Attrs != null && p.Attrs.NoSource;
+                    if(noSource)
+                    {
+                        return new { NoSource = true, p.ParameterInfo, p.ColumnName };
+                    }
+                    if (this.IgnoreMissingColumns ||
+                       (
+                       p.ParameterInfo!.ParameterType.IsGenericType
+                       && p.ParameterInfo.ParameterType.GetGenericTypeDefinition() == typeof(Nullable<>)))
+                    {
+                        if (!HasColumn(p.ColumnName!))
+                            return new { NoSource = true, p.ParameterInfo, p.ColumnName };
+                    }
+                    return new { NoSource = false, p.ParameterInfo, p.ColumnName };
+                })
+                .Select(p => new MemberSetInfo(p.ParameterInfo, GetOrdinal(p.ColumnName!), p.NoSource)).ToArray();
+                return new SetInfo(prmInfos, constructor);
+            }
+            
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .Where(p => p.CanRead && p.CanWrite)
                     .ToArray();
 
-            var toSetInfos = properties.Select(p =>
+            var PropertySetInfos = properties.Select(p =>
             {
                 var attributes = p.GetCustomAttributes(typeof(SourceColumnAttribute), true).Cast<SourceColumnAttribute>().ToArray();
                 return new { PropertyInfo = p, Attrs = attributes.Length > 0 ? attributes[0] : null };
@@ -320,29 +398,49 @@ namespace Kull.Data
                 }
                 return true;
             })
-            .Select(p => new ToSetInfo(p.PropertyInfo!, GetOrdinal(p.ColumnName!))).ToArray();
-            return toSetInfos;
+            .Select(p => new MemberSetInfo(p.PropertyInfo!, GetOrdinal(p.ColumnName!), p.PropertyInfo.SetValue)).ToArray();
+            return new SetInfo(PropertySetInfos);
         }
 
+        private static object? GetDefaultValueForType(Type type) => type.IsValueType ? Activator.CreateInstance(type):null;
 
-        private object FromRow(object? toSet, Type? type, ToSetInfo[] infos)
+        private object FromRow(object? toSet, Type? type, SetInfo infos)
         {
             if (type == null && toSet == null)
                 throw new ArgumentNullException(nameof(type));
             if (type == null)
                 type = toSet!.GetType();
-            if (toSet == null)
-                toSet = Activator.CreateInstance(type);
-
-            foreach (var property in infos)
+            if (infos.IsRecord)
             {
-                this.SetPropertyInfo(property.PropertyInfo, toSet!, property.FieldIndex);
+                var values = infos.PropertySetInfo.Select(s =>
+                {
+                    if (s.NoSource) return GetDefaultValueForType(s.Type);
+                    if (TryGetValue(s.Name, s.Type, s.FieldIndex, out var value))
+                    {
+                        return value;
+                    }
+                    throw new InvalidOperationException($"Cannot get value of type {s.Type.FullName} for field {s.Name}");
+                }).ToArray();
+                return infos.constructorInfo!.Invoke(values);
+                //constr.Invoke()
+            }
+            if (toSet == null)
+            {
+                toSet = Activator.CreateInstance(type);
+            }
+
+            foreach (var property in infos.PropertySetInfo)
+            {
+                if (TryGetValue(property.Name, property.Type, property.FieldIndex, out var value))
+                {
+                    property.SetValue(toSet, value);
+                }
 
             }
             return toSet!;
         }
 
-        private ToSetInfo[]? cached_infos;
+        private SetInfo? cached_infos;
         private Type? cached_type;
 
 
@@ -358,18 +456,19 @@ namespace Kull.Data
                 throw new ArgumentNullException(nameof(type));
             if (type == null)
                 type = toSet!.GetType();
-            ToSetInfo[] props;
+            SetInfo setInfo;
             if (type == cached_type)
             {
-                props = cached_infos!;
+                setInfo = cached_infos!.Value;
             }
             else
             {
-                props = GetInfos(type);
-                cached_infos = props;
+                setInfo = GetInfos(type);
+                cached_infos = setInfo;
                 cached_type = type;
+                
             }
-            FromRow(toSet, type, props);
+            FromRow(toSet, type, setInfo);
             return toSet!;
         }
 

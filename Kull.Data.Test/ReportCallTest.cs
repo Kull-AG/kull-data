@@ -9,7 +9,7 @@ namespace Kull.Data.Test
         [TestMethod]
         public void TestMethod1()
         {
-            var rc = new Reporting.ReportCall("testreport");
+            var rc = new Reporting.ReportCall("", "testreport");
             rc.SetParameter("Test1", true)
                 .SetParameter("Test2", "hello")
                 .SetParameter("Test2", "_no_random_value")

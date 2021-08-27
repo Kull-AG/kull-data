@@ -8,8 +8,7 @@ namespace Kull.Data
     /// <summary>
     /// Use this in conjunction with RowHelper only. 
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false,
-Inherited = true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     public class SourceColumnAttribute : System.Attribute
     {
         /// <summary>

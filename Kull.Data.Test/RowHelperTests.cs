@@ -19,6 +19,9 @@ namespace Kull.Data.Test
             public string MissingField { get; set; }
         }
 
+        public record TestRecord(string FirstName, string LastName, int? SomeId);
+        public record TestRecord2(string FirstName, string LastName, int? SomeId, string? MissingField);
+
         [TestMethod]
         public void TestSimpleCase()
         {
@@ -42,6 +45,28 @@ namespace Kull.Data.Test
             Assert.AreEqual(result[2].SomeId, 66);
         }
 
+        [TestMethod]
+        public void TestImmutable()
+        {
+            var dt = DataReaderTests.GetTestDataSet();
+            int fieldCount = dt[0].Count;
+            var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
+            var result = RowHelper.FromTable<TestRecord>(odr1);
+            Assert.AreEqual(result[0].FirstName, "peter");
+            Assert.AreEqual(result[2].SomeId, 66);
+        }
+
+        [TestMethod]
+        public void TestMissingFieldImmutable()
+        {
+            var dt = DataReaderTests.GetTestDataSet();
+            int fieldCount = dt[0].Count;
+            var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
+            var result = RowHelper.FromTable<TestRecord2>(odr1, true);
+            Assert.AreEqual(result[0].FirstName, "peter");
+            Assert.IsNull(result[0].MissingField);
+            Assert.AreEqual(result[2].SomeId, 66);
+        }
 
     }
 }
