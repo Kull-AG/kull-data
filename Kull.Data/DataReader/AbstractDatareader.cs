@@ -50,7 +50,7 @@ namespace Kull.Data.DataReader
             return (byte)GetValue(i);
         }
 
-        public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+        public override long GetBytes(int i, long fieldOffset, byte[]? buffer, int bufferoffset, int length)
         {
             var vl = GetValue(i);
             byte[] bvl;
@@ -74,6 +74,7 @@ namespace Kull.Data.DataReader
             {
                 throw new ArgumentException("Cannot convert to byte");
             }
+            if (buffer == null) return bvl.Length;
             int c = 0;
             for (long of = fieldOffset; of < bvl.Length && c <= length; of++)
             {

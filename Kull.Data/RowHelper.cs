@@ -69,12 +69,13 @@ namespace Kull.Data
         /// <param name="dt"></param>
         /// <param name="ignoreMissingColumns"></param>
         /// <returns></returns>
-        public static T[] FromTable<T>(dt.DataTable dt, bool ignoreMissingColumns = false) where T : new()
+        [Obsolete("Use DbDataReader instead")]
+        public static IReadOnlyCollection<T> FromTable<T>(dt.DataTable dt, bool ignoreMissingColumns = false) 
         {
             T[] toReturn = new T[dt.Rows.Count];
             for (int i = 0; i < dt.Rows.Count; i++)
             {
-                toReturn[i] = FromRow(dt.Rows[i], new T(), ignoreMissingColumns);
+                toReturn[i] = FromRow(dt.Rows[i], default(T), ignoreMissingColumns);
             }
             return toReturn;
         }
@@ -86,7 +87,7 @@ namespace Kull.Data
         /// <param name="dt"></param>
         /// <param name="ignoreMissingColumns"></param>
         /// <returns></returns>
-        public static T[] FromTable<T>(IDataReader dt, bool ignoreMissingColumns = false)
+        public static IReadOnlyCollection<T> FromTable<T>(IDataReader dt, bool ignoreMissingColumns = false)
         {
             var rh = new RowHelper(dt);
             rh.IgnoreMissingColumns = ignoreMissingColumns;
@@ -111,7 +112,7 @@ namespace Kull.Data
         /// <param name="ignoreMissingColumns"></param>
         /// <returns></returns>
         [Obsolete("Use DbReader instead")]
-        public static T FromRow<T>(dt.DataRow rw, T toSet, bool ignoreMissingColumns = false)
+        public static T FromRow<T>(dt.DataRow rw, T? toSet, bool ignoreMissingColumns = false)
         {
             return new RowHelper(rw)
             {
@@ -141,7 +142,7 @@ namespace Kull.Data
         /// <typeparam name="T"></typeparam>
         /// <param name="toSet"></param>
         /// <returns></returns>
-        public T FromRow<T>(T toSet)
+        public T FromRow<T>(T? toSet)
         {
             return (T)FromRow(toSet, typeof(T));
         }
@@ -316,12 +317,12 @@ namespace Kull.Data
             public readonly string Name;
             public readonly int FieldIndex;
             public readonly bool NoSource=false;
-            public Action<object, object?> SetValue;
+            public Action<object, object?>? SetValue;
 
             public MemberSetInfo(PropertyInfo property, int fieldIndex, Action<object, object?> setValue)
             {
                 this.Type = property.PropertyType;
-                this.Name = property.Name;
+                this.Name = property.Name!;
                 this.FieldIndex = fieldIndex;
                 this.SetValue = setValue;
             }
@@ -329,7 +330,7 @@ namespace Kull.Data
             public MemberSetInfo(ParameterInfo property, int fieldIndex, bool noSource)
             {
                 this.Type = property.ParameterType;
-                this.Name = property.Name;
+                this.Name = property.Name!;
                 this.FieldIndex = fieldIndex;
                 this.NoSource = noSource;
                 this.SetValue = null;
@@ -433,7 +434,7 @@ namespace Kull.Data
             {
                 if (TryGetValue(property.Name, property.Type, property.FieldIndex, out var value))
                 {
-                    property.SetValue(toSet, value);
+                    property.SetValue!(toSet!, value);
                 }
 
             }
@@ -468,8 +469,7 @@ namespace Kull.Data
                 cached_type = type;
                 
             }
-            FromRow(toSet, type, setInfo);
-            return toSet!;
+            return FromRow(toSet, type, setInfo);
         }
 
         /// <summary>

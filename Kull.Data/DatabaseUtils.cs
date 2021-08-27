@@ -749,8 +749,8 @@ namespace Kull.Data
         /// <param name="cmd">The command</param>
         /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
         /// <returns>A List of the items</returns>
-        public static T[] AsArrayOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
-        where T : class, new()
+        public static IReadOnlyCollection<T> AsCollectionOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
+        where T : class
         {
             cmd.Connection!.AssureOpen();
             using (var rdr = cmd.ExecuteReader())
@@ -767,8 +767,8 @@ namespace Kull.Data
         /// <param name="cmd">The command</param>
         /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
         /// <returns>A List of the items</returns>
-        public static async Task<T[]> AsArrayOfAsync<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
-            where T : class, new()
+        public static async Task<IReadOnlyCollection<T>> AsCollectionOfAsync<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
+            where T : class
         {
             await cmd.Connection!.AssureOpenAsync().ConfigureAwait(false);
             using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
@@ -776,6 +776,44 @@ namespace Kull.Data
                 return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns);
             }
         }
+
+        /// <summary>
+        /// Returns a list (fully loaded in RAM) of the DB Objects
+        /// </summary>
+        /// <typeparam name="T">The Type to return</typeparam>
+        /// <param name="cmd">The command</param>
+        /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
+        /// <returns>A List of the items</returns>
+        [Obsolete("Use AsCollectionOf which is immutable")]
+        public static T[] AsArrayOf<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
+        where T : class
+        {
+            cmd.Connection!.AssureOpen();
+            using (var rdr = cmd.ExecuteReader())
+            {
+                return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns).ToArray();
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a list (fully loaded in RAM) of the DB Objects
+        /// </summary>
+        /// <typeparam name="T">The Type to return</typeparam>
+        /// <param name="cmd">The command</param>
+        /// <param name="ignoreMissingColumns">True to not throw if the class has more properties then the result set</param>
+        /// <returns>A List of the items</returns>
+        [Obsolete("Use AsCollectionOfAsync which is immutable")]
+        public static async Task<T[]> AsArrayOfAsync<T>(this DbCommand cmd, bool ignoreMissingColumns = false)
+            where T : class
+        {
+            await cmd.Connection!.AssureOpenAsync().ConfigureAwait(false);
+            using (var rdr = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
+            {
+                return Kull.Data.RowHelper.FromTable<T>(rdr, ignoreMissingColumns).ToArray();
+            }
+        }
+
 
     }
 }

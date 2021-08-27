@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SQLite;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace Kull.Data.Test
 {
@@ -40,7 +41,7 @@ namespace Kull.Data.Test
                 cmd.AddCommandParameter("id", 1);
                 cmd.AddParametersFromEntity(new { name = "not hello" });
 
-                var dt = cmd.AsArrayOf<TestData>();
+                var dt = cmd.AsCollectionOf<TestData>().ToArray();
                 Assert.AreEqual(dt.Length, 1);
                 Assert.AreEqual(dt[0].Name, "hello");
                 Assert.AreEqual(dt[0].Id, 1);

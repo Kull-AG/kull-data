@@ -20,7 +20,7 @@ using (var con = Kull.Data.DatabaseUtils.GetConnectionFromConfig("SomeConfigConn
     return con.CreateSPCommand("spGetSomeData")
         .AddCommandParameter("NameOfParameter", 1)
         .AddCommandParameter("NameofOtherPArameter", 2)
-        .AsArrayOf<SomeClassName>()
+        .AsArrayOf<SomeClassName>() // As of v6, a C# 9 record can be used here
 }
 ```
 

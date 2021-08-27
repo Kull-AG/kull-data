@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Kull.Data.Test
 {
@@ -28,7 +29,7 @@ namespace Kull.Data.Test
             var dt = DataReaderTests.GetTestDataSet();
             int fieldCount = dt[0].Count;
             var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
-            var result = RowHelper.FromTable<TestClass>(odr1, false);
+            var result = RowHelper.FromTable<TestClass>(odr1, false).ToArray();
             Assert.AreEqual(result[0].FirstName, "peter");
             Assert.AreEqual(result[2].SomeId, 66);
         }
@@ -39,7 +40,7 @@ namespace Kull.Data.Test
             var dt = DataReaderTests.GetTestDataSet();
             int fieldCount = dt[0].Count;
             var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
-            var result = RowHelper.FromTable<TestClass2>(odr1, true);
+            var result = RowHelper.FromTable<TestClass2>(odr1, true).ToArray();
             Assert.AreEqual(result[0].FirstName, "peter");
             Assert.IsNull(result[0].MissingField);
             Assert.AreEqual(result[2].SomeId, 66);
@@ -51,7 +52,7 @@ namespace Kull.Data.Test
             var dt = DataReaderTests.GetTestDataSet();
             int fieldCount = dt[0].Count;
             var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
-            var result = RowHelper.FromTable<TestRecord>(odr1);
+            var result = RowHelper.FromTable<TestRecord>(odr1).ToArray();
             Assert.AreEqual(result[0].FirstName, "peter");
             Assert.AreEqual(result[2].SomeId, 66);
         }
@@ -62,7 +63,7 @@ namespace Kull.Data.Test
             var dt = DataReaderTests.GetTestDataSet();
             int fieldCount = dt[0].Count;
             var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
-            var result = RowHelper.FromTable<TestRecord2>(odr1, true);
+            var result = RowHelper.FromTable<TestRecord2>(odr1, true).ToArray();
             Assert.AreEqual(result[0].FirstName, "peter");
             Assert.IsNull(result[0].MissingField);
             Assert.AreEqual(result[2].SomeId, 66);
