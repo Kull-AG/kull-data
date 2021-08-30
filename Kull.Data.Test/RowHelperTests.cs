@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
+using System.Data.Common;
 
 namespace Kull.Data.Test
 {
@@ -11,7 +12,7 @@ namespace Kull.Data.Test
        public class TestClass
         {
             public string FirstName { get; set; }
-            public string LastName { get; set; }
+            public string FamilyName { get; set; }
             public int? SomeId { get; set; }
         }
 
@@ -20,8 +21,21 @@ namespace Kull.Data.Test
             public string MissingField { get; set; }
         }
 
-        public record TestRecord(string FirstName, string LastName, int? SomeId);
-        public record TestRecord2(string FirstName, string LastName, int? SomeId, string? MissingField);
+        public record TestRecord(string FirstName, string FamilyName, int? SomeId);
+        public record TestRecord2(string FirstName, string FamilyName, int? SomeId, string? MissingField);
+
+        public class TestRecordWithConstr
+        {
+            public TestRecordWithConstr(DbDataReader reader, string firstName)
+            {
+                this.FirstName = firstName;
+                var FamilyNameCol = reader.GetOrdinal("FamilyName");
+                this.FamilyName = reader.IsDBNull(FamilyNameCol) ? null : reader.GetString(FamilyNameCol);
+            }
+
+            public string FirstName { get; }
+            public string FamilyName { get; }
+        }
 
         [TestMethod]
         public void TestSimpleCase()
@@ -67,6 +81,17 @@ namespace Kull.Data.Test
             Assert.AreEqual(result[0].FirstName, "peter");
             Assert.IsNull(result[0].MissingField);
             Assert.AreEqual(result[2].SomeId, 66);
+        }
+
+        [TestMethod]
+        public void TestReaderInjection()
+        {
+            var dt = DataReaderTests.GetTestDataSet();
+            int fieldCount = dt[0].Count;
+            var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
+            var result = RowHelper.FromTable<TestRecordWithConstr>(odr1, false).ToArray();
+            Assert.AreEqual(result[0].FirstName, "peter");
+            Assert.AreEqual(result[2].FamilyName, "oijo243");
         }
 
     }

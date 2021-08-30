@@ -256,6 +256,20 @@ namespace Kull.Data
             {
                 value =  GetInt16FieldValue(fieldIndex);
             }
+            else if (propertyType == typeof(object))
+            {
+                value = GetValue(fieldIndex);
+            }
+            else if (propertyType == typeof(IDataReader))
+            {
+                if (reader == null) throw new ArgumentException("Must call this with a Datareader");
+                value = reader;
+            }
+            else if (propertyType == typeof(System.Data.Common.DbDataReader))
+            {
+                if (reader == null) throw new ArgumentException("Must call this with a Datareader");
+                value = (System.Data.Common.DbDataReader)reader;
+            }
             else if (
                    propertyType.IsGenericType
                 || propertyType.IsArray)
