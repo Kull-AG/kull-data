@@ -2,6 +2,7 @@
 using System.Data.SQLite;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Kull.Data.Test
 {
@@ -12,8 +13,20 @@ namespace Kull.Data.Test
         {
             public int Id { get; set; }
             public string Name { get; set; }
+
         }
+
+
+        public record TestData2(string Name, int? NullableId);
+
         [TestMethod]
+        public void TestTVPParamter()
+        {
+            System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
+            cmd.AddTableValuedParameter("Tester", new TestData2[] { new TestData2("test1", null), new TestData2("test2", 2) }, "dbo.testernamer");
+        }
+
+            [TestMethod]
         public void TestCommands()
         {
 
