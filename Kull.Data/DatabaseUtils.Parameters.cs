@@ -150,7 +150,9 @@ namespace Kull.Data
             var dt = new System.Data.DataTable();
             foreach (var p in properties)
             {
-                dt.Columns.Add(new DataColumn(p.Name, p.PropertyType));
+                dt.Columns.Add(new DataColumn(p.Name, p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(System.Nullable<>) ?
+                        Nullable.GetUnderlyingType(p.PropertyType) :
+                        p.PropertyType)) ;
             }
             foreach (var item in value)
             {
