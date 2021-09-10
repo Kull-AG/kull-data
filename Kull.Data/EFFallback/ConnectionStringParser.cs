@@ -110,7 +110,7 @@ namespace Kull.Data.EFFallback
             }
             if (currentValue.Length > 0)
                 values.Add(currentValue);
-            var obj = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+            var obj = new Dictionary<string, string>(values.Count, StringComparer.CurrentCultureIgnoreCase);
             for (var vp = 0; vp < values.Count; vp += 2)
             {
                 obj[values[vp].Trim()] = values[vp + 1];

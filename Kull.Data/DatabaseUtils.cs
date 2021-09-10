@@ -559,11 +559,15 @@ namespace Kull.Data
         /// <returns></returns>
         public static DbConnection GetConnectionFromConfig(string configName)
         {
+            string env = Environment.GetEnvironmentVariable("ASPNETCORE_Environment");
 
             var builder = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                 .SetBasePath(System.IO.Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, false);
-
+            if(env != null)
+            {
+                builder.AddJsonFile($"appsettings.{env}.json", true, false);
+            }
 
             var Configuration = builder.Build();
             var value = Configuration["ConnectionStrings:" + configName];
