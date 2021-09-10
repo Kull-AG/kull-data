@@ -65,9 +65,21 @@ namespace Kull.Data
 
         private static string QuoteName(string input)
         {
-            if (input.Contains(" ") || input.Contains("\"") || input.Contains("[") || input.Contains("]"))
+            if (input.Length == 0) return input;
+            if (input.Contains(" ") || input.Contains("'") || input.Contains("\"") || input.Contains("[") || input.Contains("]")
+                || input.Contains("--") // contains dangerous characters
+                 || input.Contains("/*")// contains dangerous characters
+                 || input.Contains("*/")// contains dangerous characters
+                 || (input[0] >='0' && input[0] <='9') // Starts with a number
+                 )
                 return input.Replace("\"", "\"\"");
             return input;
+        }
+
+        [Obsolete("Use ToString(withDatabase, bool quote) instead")]
+        public string ToString(bool withDatabase)
+        {
+            return ToString(withDatabase, true);
         }
 
         /// <summary>
