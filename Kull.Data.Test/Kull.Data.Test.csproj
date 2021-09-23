@@ -74,6 +74,7 @@
     <Compile Include="EFFallbackTest.cs" />
     <Compile Include="CommandTest.cs" />
     <Compile Include="ReportCallTest.cs" />
+    <Compile Include="DBObjectNameTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">
