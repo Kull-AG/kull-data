@@ -63,16 +63,34 @@ namespace Kull.Data
             return (Schema == null ? Name : Schema + "." + Name);
         }
 
+
+        /// <summary>
+        /// Quotes an identifier if required.
+        /// Very defensive algo: Only a-z, A-Z, 0-9 and _ are allowed in a name
+        /// and is must not start with a number and not be a SQL Keyword
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         private static string QuoteName(string input)
         {
-            if (input.Length == 0) return input;
-            if (input.Contains(" ") || input.Contains("'") || input.Contains("\"") || input.Contains("[") || input.Contains("]")
-                || input.Contains("--") // contains dangerous characters
-                 || input.Contains("/*")// contains dangerous characters
-                 || input.Contains("*/")// contains dangerous characters
-                 || (input[0] >='0' && input[0] <='9') // Starts with a number
-                 )
-                return input.Replace("\"", "\"\"");
+            if (input == null || input.Length == 0) throw new ArgumentException("input must not be empty");
+            if (SQLKeywords.IsSqlKeywords(input))
+            {
+                return "\"" + input.Replace("\"", "\"\"") + "\"";
+            }
+            if (input[0] >= '0' && input[0] <= '9')
+                return "\"" + input.Replace("\"", "\"\"") + "\"";
+            for (int i = 1; i < input.Length; i++)
+            {
+                if (input[i] != '_'
+                   && !(input[i] >= 'a' && input[i] <= 'z')
+                   && !(input[i] >= '0' && input[i] <= '9')
+                   && !(input[i] >= 'A' && input[i] <= 'Z'))
+                {
+
+                    return "\"" + input.Replace("\"", "\"\"") + "\"";
+                }
+            }
             return input;
         }
 
