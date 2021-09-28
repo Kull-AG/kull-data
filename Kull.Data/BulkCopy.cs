@@ -9,11 +9,45 @@ namespace Kull.Data
 {
     public static class BulkCopy
     {
+        private static void GenericInsert(this DbConnection connection, DBObjectName destinationTable, DbDataReader source)
+        {
+            // Innspired by https://docs.microsoft.com/en-us/dotnet/standard/data/sqlite/bulk-insert
+            using (var transaction = connection.BeginTransaction())
+            {
+                DbCommand cmd = connection.CreateCommand();
+                string[] fieldNames = Enumerable.Range(0, source.FieldCount)
+                    .Select(i => source.GetName(i)).ToArray();
+                string colNamesQuoted = string.Join(", ", fieldNames.Select(s => new DBObjectName(null, s).ToString(false, true)));
+                string prmNames = string.Join(", ", Enumerable.Range(0, source.FieldCount)
+                    .Select(s => "@p" + s.ToString()));
+
+                cmd.CommandText = "INSERT INTO " + destinationTable.ToString(false, true) + "(" + colNamesQuoted + ")"
+                        + " VALUES (" + prmNames + ")";
+                var prms = Enumerable.Range(0, source.FieldCount)
+                    .Select(s =>
+                    {
+                        var p = cmd.CreateParameter();
+                        p.ParameterName = "@p" + s.ToString();
+                        cmd.Parameters.Add(p);
+                        return p;
+                    }).ToArray();
+                while (source.Read())
+                {
+                    for (int i = 0; i < prms.Length; i++)
+                    {
+                        prms[i].Value = source.IsDBNull(i) ? DBNull.Value : source.GetValue(i);
+                    }
+                    cmd.ExecuteNonQuery();
+                }
+                transaction.Commit();
+            }
+        }
+
         public static void BulkInsert(this DbConnection connection, DBObjectName destinationTable, DbDataReader source)
         {
             Type bulkCopyType;
             Type optionsType;
-            if(connection.GetType().FullName == "System.Data.SqlClient.SqlConnection")
+            if (connection.GetType().FullName == "System.Data.SqlClient.SqlConnection")
             {
                 bulkCopyType = Type.GetType("System.Data.SqlClient.SqlBulkCopy, System.Data.SqlClient", true);
                 optionsType = Type.GetType("System.Data.SqlClient.SqlBulkCopyOptions, System.Data.SqlClient", true);
@@ -25,14 +59,15 @@ namespace Kull.Data
             }
             else
             {
-                throw new InvalidOperationException("Currently only supports Microsoft.Data.SqlClient and System.Data.SqlClient");
+                GenericInsert(connection, destinationTable, source);
+                return;
             }
             var tableLockValue = Convert.ChangeType(0x4, optionsType);
             var cp = Activator.CreateInstance(bulkCopyType, connection, tableLockValue, null);
-            cp.GetType().GetProperty("DestinationTableName",  System.Reflection.BindingFlags.Public |
+            cp.GetType().GetProperty("DestinationTableName", System.Reflection.BindingFlags.Public |
                     System.Reflection.BindingFlags.Instance |
                     System.Reflection.BindingFlags.SetProperty).SetValue(cp, destinationTable.ToString(false, true));
-            var colMappings= cp.GetType().GetProperty("ColumnMappings", System.Reflection.BindingFlags.Public |
+            var colMappings = cp.GetType().GetProperty("ColumnMappings", System.Reflection.BindingFlags.Public |
                    System.Reflection.BindingFlags.Instance |
                    System.Reflection.BindingFlags.SetProperty);
             var addMethod = colMappings.GetType().GetMethod("Add", new Type[] { typeof(string), typeof(string) });
@@ -43,9 +78,9 @@ namespace Kull.Data
                 string columnName = source.GetName(i);
                 colInfos += columnName + ": " + source.GetDataTypeName(i) + "  " + source.GetFieldType(i) + Environment.NewLine;
                 addMethod.Invoke(colMappings, new object[] { source.GetName(i), columnName });
-                
+
             }
-            cp.GetType().GetMethod("WriteToServer", new Type[] {typeof(DbDataReader)}).Invoke(cp, new object[] { source });
+            cp.GetType().GetMethod("WriteToServer", new Type[] { typeof(DbDataReader) }).Invoke(cp, new object[] { source });
             /*
             var cp3 = new System.Data.SqlClient.SqlBulkCopy((Microsoft.Data.SqlClient.SqlConnection)connection,
                 System.Data.SqlClient.SqlBulkCopyOptions.TableLock, null)
