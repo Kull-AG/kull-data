@@ -80,8 +80,12 @@ namespace Kull.Data
             }
             if (input[0] >= '0' && input[0] <= '9')
                 return "\"" + input.Replace("\"", "\"\"") + "\"";
-            for (int i = 1; i < input.Length; i++)
+            for (int i = 0; i < input.Length; i++)
             {
+                if(i==0 && (input[0] == '#'|| input[0] == '@'))
+                {
+                    continue;//Ok to start with # or @ (temp table / table variables)
+                }
                 if (input[i] != '_'
                    && !(input[i] >= 'a' && input[i] <= 'z')
                    && !(input[i] >= '0' && input[i] <= '9')
