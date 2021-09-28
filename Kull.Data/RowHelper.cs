@@ -330,7 +330,7 @@ namespace Kull.Data
             public readonly Type Type;
             public readonly string Name;
             public readonly int FieldIndex;
-            public readonly bool NoSource=false;
+            public readonly bool NoSource;
             public Action<object, object?>? SetValue;
 
             public MemberSetInfo(PropertyInfo property, int fieldIndex, Action<object, object?> setValue)
@@ -339,6 +339,7 @@ namespace Kull.Data
                 this.Name = property.Name!;
                 this.FieldIndex = fieldIndex;
                 this.SetValue = setValue;
+                this.NoSource = false;
             }
 
             public MemberSetInfo(ParameterInfo property, int fieldIndex, bool noSource)

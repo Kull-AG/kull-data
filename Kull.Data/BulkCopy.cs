@@ -43,7 +43,15 @@ namespace Kull.Data
             }
         }
 
-        public static void BulkInsert(this DbConnection connection, DBObjectName destinationTable, DbDataReader source)
+        /// <summary>
+        /// Will be used for options on bulk insert. Not used currently
+        /// </summary>
+        public class BulkInsertOptions
+        {
+        }
+
+        public static void BulkInsert(this DbConnection connection, DBObjectName destinationTable, DbDataReader source,
+            BulkInsertOptions options)
         {
             Type bulkCopyType;
             Type optionsType;
