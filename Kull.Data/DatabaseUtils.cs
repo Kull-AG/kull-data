@@ -238,7 +238,7 @@ namespace Kull.Data
         /// <param name="commandType">The type of the command</param>
         /// <returns></returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100")]
-        public static DbCommand CreateCommand(this DbConnection con, string text, CommandType commandType)
+        public static DbCommand CreateCommand(this DbConnection con, string text, CommandType commandType = CommandType.Text)
         {
             var cmd = con.CreateCommand();
             cmd.CommandText = text;
@@ -317,12 +317,12 @@ namespace Kull.Data
             using (var tbl = cmd.ExecuteReader())
             {
                 tbl.Read();
-                var vl = tbl.GetValue(0);
+                var vl = tbl.IsDBNull(0) ? default(T) : tbl.GetValue(0);
                 if (vl is T)
                     return (T)vl;
                 else
                 {
-                    return (T)vl;//Throw
+                    return (T)Convert.ChangeType(vl, typeof(T));//Throw
                 }
             }
 
@@ -372,12 +372,12 @@ namespace Kull.Data
             using (var tbl = await cmd.ExecuteReaderAsync().ConfigureAwait(false))
             {
                 tbl.Read();
-                var vl = tbl.GetValue(0);
+                var vl = tbl.IsDBNull(0) ? default(T) : tbl.GetValue(0);
                 if (vl is T)
                     return (T)vl;
                 else
                 {
-                    return (T)vl;//Throw
+                    return (T)Convert.ChangeType(vl, typeof(T));//Throw
                 }
             }
 
