@@ -14,7 +14,7 @@ namespace Kull.Data
             // Innspired by https://docs.microsoft.com/en-us/dotnet/standard/data/sqlite/bulk-insert
             using (var transaction = connection.BeginTransaction())
             {
-                DbCommand cmd = connection.CreateCommand();
+                DbCommand cmd = transaction.CreateCommand("");
                 string[] fieldNames = Enumerable.Range(0, source.FieldCount)
                     .Select(i => source.GetName(i)).ToArray();
                 string colNamesQuoted = string.Join(", ", fieldNames.Select(s => new DBObjectName(null, s).ToString(false, true)));
