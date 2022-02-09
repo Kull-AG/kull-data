@@ -18,12 +18,37 @@ namespace Kull.Data.DataReader
 #pragma warning restore CA1710 // Identifiers should have correct suffix
     {
         private readonly IEnumerator<IReadOnlyDictionary<string, object?>> baseValues;
-        private string[] names;
+        private readonly string[] names;
         private bool isClosed = false;
-        private Type[]? types;
+        private readonly Type[]? types;
         private bool? firstRead = null;
 
+        /// <summary>
+        /// Missing fields in dictionary are allowed.
+        /// </summary>
+        public bool AllowMissing { get; } = false;
+
         public override bool HasRows => (firstRead == null || firstRead == true);
+
+        /// <summary>
+        /// This creates a new ObjectDataReader
+        /// </summary>
+        /// <param name="baseValues">The values to base on</param>
+        /// <param name="names">The names are available only after the first read which does sometimes make trouble.
+        /// If you know the names before, set them here (alternatively pass a list)</param>
+        /// <param name="types">The types of the fields</param>
+        /// <param name="allowMissingFields">Allow missing fields in dictionary.</param>
+        public ObjectDataReader(IEnumerable<IReadOnlyDictionary<string, object?>> baseValues, string[] names,
+                Type[] types,
+                bool allowMissingFields)
+        {
+            this.baseValues = baseValues.GetEnumerator();
+            firstRead = this.baseValues.MoveNext();// Do first read to have HasRows
+
+            this.names = names;
+            this.types = types;
+            this.AllowMissing = allowMissingFields;
+        }
 
 
         /// <summary>
@@ -105,6 +130,7 @@ namespace Kull.Data.DataReader
         {
             get
             {
+                if (AllowMissing && !this.baseValues.Current.ContainsKey(name)) return null;
                 return this.baseValues.Current[name];
             }
         }
@@ -152,12 +178,14 @@ namespace Kull.Data.DataReader
 
         public override object? GetValue(int i)
         {
+            if (AllowMissing && !this.baseValues.Current.ContainsKey(names[i])) return null;
             return this.baseValues.Current[names[i]];
         }
 
 
         public override bool IsDBNull(int i)
         {
+            if (AllowMissing && !this.baseValues.Current.ContainsKey(names[i])) return true;
             return baseValues.Current[names[i]] == DBNull.Value || baseValues.Current[names[i]] == null;
         }
 
@@ -168,7 +196,7 @@ namespace Kull.Data.DataReader
 
         public override bool Read()
         {
-            if (firstRead!=null)
+            if (firstRead != null)
             {
                 bool vl = firstRead.Value;
                 firstRead = null;
@@ -177,7 +205,7 @@ namespace Kull.Data.DataReader
             return this.baseValues.MoveNext();
         }
 
-        
-        
+
+
     }
 }
