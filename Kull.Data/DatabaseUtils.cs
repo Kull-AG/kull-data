@@ -54,6 +54,21 @@ namespace Kull.Data
         }
 
         /// <summary>
+        /// Asynchronously checks the connection to be open and if not open, opens it
+        /// </summary>
+        /// <param name="con">The connection</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        /// <returns>The same connection</returns>
+        public static async Task<DbConnection> AssureOpenAsync(this DbConnection con, System.Threading.CancellationToken cancellationToken)
+        {
+            if (con.State != ConnectionState.Open)
+            {
+                await con.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            return con;
+        }
+
+        /// <summary>
         /// Gets Parameters from procedure
         /// Calls the Database
         /// </summary>
