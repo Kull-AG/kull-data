@@ -94,7 +94,7 @@ namespace Kull.Data.DataReader
             var strVl = GetString(i);
             if (buffer == null) return strVl.Length;
             int c = 0;
-            for (int of = (int)fieldOffset; of < strVl.Length && c <= length; of++)
+            for (int of = (int)fieldOffset; of < strVl.Length && c < length; of++)
             {
                 buffer[bufferoffset + c] = strVl[of];
                 c++;
