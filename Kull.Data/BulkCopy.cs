@@ -59,13 +59,13 @@ namespace Kull.Data
             Type optionsType;
             if (connection.GetType().FullName == "System.Data.SqlClient.SqlConnection")
             {
-                bulkCopyType = Type.GetType("System.Data.SqlClient.SqlBulkCopy, System.Data.SqlClient", true);
-                optionsType = Type.GetType("System.Data.SqlClient.SqlBulkCopyOptions, System.Data.SqlClient", true);
+                bulkCopyType = Type.GetType("System.Data.SqlClient.SqlBulkCopy, System.Data.SqlClient", throwOnError: true)!;
+                optionsType = Type.GetType("System.Data.SqlClient.SqlBulkCopyOptions, System.Data.SqlClient", throwOnError: true)!;
             }
             else if (connection.GetType().FullName == "Microsoft.Data.SqlClient.SqlConnection")
             {
-                bulkCopyType = Type.GetType("Microsoft.Data.SqlClient.SqlBulkCopy, Microsoft.Data.SqlClient", true);
-                optionsType = Type.GetType("Microsoft.Data.SqlClient.SqlBulkCopyOptions, Microsoft.Data.SqlClient", true);
+                bulkCopyType = Type.GetType("Microsoft.Data.SqlClient.SqlBulkCopy, Microsoft.Data.SqlClient", throwOnError: true)!;
+                optionsType = Type.GetType("Microsoft.Data.SqlClient.SqlBulkCopyOptions, Microsoft.Data.SqlClient", throwOnError: true)!;
             }
             else
             {
@@ -76,11 +76,11 @@ namespace Kull.Data
             var cp = Activator.CreateInstance(bulkCopyType, connection, tableLockValue, null);
             cp.GetType().GetProperty("DestinationTableName", System.Reflection.BindingFlags.Public |
                     System.Reflection.BindingFlags.Instance |
-                    System.Reflection.BindingFlags.SetProperty).SetValue(cp, destinationTable.ToString(false, true));
+                    System.Reflection.BindingFlags.SetProperty)!.SetValue(cp, destinationTable.ToString(false, true));
             var colMappings = cp.GetType().GetProperty("ColumnMappings", System.Reflection.BindingFlags.Public |
                    System.Reflection.BindingFlags.Instance |
-                   System.Reflection.BindingFlags.SetProperty);
-            var addMethod = colMappings.GetType().GetMethod("Add", new Type[] { typeof(string), typeof(string) });
+                   System.Reflection.BindingFlags.SetProperty)!;
+            var addMethod = colMappings.GetType().GetMethod("Add", new Type[] { typeof(string), typeof(string) })!;
 
             string colInfos = "";
             for (int i = 0; i < source.FieldCount; i++)
@@ -90,7 +90,7 @@ namespace Kull.Data
                 addMethod.Invoke(colMappings, new object[] { source.GetName(i), columnName });
 
             }
-            cp.GetType().GetMethod("WriteToServer", new Type[] { typeof(DbDataReader) }).Invoke(cp, new object[] { source });
+            cp.GetType().GetMethod("WriteToServer", new Type[] { typeof(DbDataReader) })!.Invoke(cp, new object[] { source });
             /*
             var cp3 = new System.Data.SqlClient.SqlBulkCopy((Microsoft.Data.SqlClient.SqlConnection)connection,
                 System.Data.SqlClient.SqlBulkCopyOptions.TableLock, null)
