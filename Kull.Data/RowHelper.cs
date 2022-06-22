@@ -87,8 +87,10 @@ namespace Kull.Data
         /// <param name="dt"></param>
         /// <param name="ignoreMissingColumns"></param>
         /// <returns></returns>
-        public static IReadOnlyCollection<T> FromTable<T>(IDataReader dt, bool ignoreMissingColumns = false)
+        public static IReadOnlyCollection<T> FromTable<T>(System.Data.Common.DbDataReader dt, bool ignoreMissingColumns = false)
         {
+            if (!dt.HasRows)
+                return Array.Empty<T>();
             var rh = new RowHelper(dt);
             rh.IgnoreMissingColumns = ignoreMissingColumns;
             var type = typeof(T);

@@ -46,12 +46,14 @@ namespace Kull.Data
         /// <summary>
         /// Will be used for options on bulk insert. Not used currently
         /// </summary>
+#pragma warning disable CA1034 // Nested types should not be visible . Can not change this for compat
         public class BulkInsertOptions
+#pragma warning restore CA1034 // Nested types should not be visible
         {
         }
 
         public static void BulkInsert(this DbConnection connection, DBObjectName destinationTable, DbDataReader source,
-            BulkInsertOptions options)
+            BulkInsertOptions? options = null)
         {
             Type bulkCopyType;
             Type optionsType;
