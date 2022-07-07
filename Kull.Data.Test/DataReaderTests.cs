@@ -55,6 +55,16 @@ namespace Kull.Data.Test
         }
 
         [TestMethod]
+        public void TestObjectDataReaderSchema()
+        {
+            var dt = GetTestDataSet();
+            int fieldCount = dt[0].Count;
+            var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
+            var dtscdt = odr1.GetSchemaTable();
+            Assert.AreEqual(dtscdt.Rows.Count, dt.Count);
+        }
+
+        [TestMethod]
         public void TestObjectDataReaderFields()
         {
             var dt = GetTestDataSet();

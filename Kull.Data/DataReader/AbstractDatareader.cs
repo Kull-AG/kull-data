@@ -236,10 +236,10 @@ namespace Kull.Data.DataReader
                 row["ColumnName"]=info.ColumnName;                
                 row["ColumnOrdinal"]=info.ColumnOrdinal;
                 row["ColumnSize"]=info.ColumnSize;        
-                row["NumericPrecision"]=info.NumericPrecision;  
-                row["NumericScale"]=info.NumericScale;         
-                row["DataType"]=info.DataType;          
-                row["ProviderType"]=info.ProviderType;        
+                row["NumericPrecision"]=info.NumericPrecision ?? (object?)DBNull.Value;  
+                row["NumericScale"]=info.NumericScale ?? (object?)DBNull.Value;         
+                row["DataType"]=info.DataType ?? (object?)DBNull.Value;          
+                row["ProviderType"]=info.ProviderType ?? (object?)DBNull.Value;        
                 row["IsLong"]=info.IsLong;           
                 row["AllowDBNull"]=info.AllowDBNull;  
                 row["IsReadOnly"]=info.IsReadOnly;      
@@ -247,17 +247,17 @@ namespace Kull.Data.DataReader
                 row["IsUnique"]=info.IsUnique;              
                 row["IsKey"]=info.IsKey;             
                 row["IsAutoIncrement"]=info.IsAutoIncrement;  
-                row["BaseCatalogName"]=info.BaseCatalogName; 
-                row["BaseSchemaName"]=info.BaseSchemaName; 
-                row["BaseTableName"]=info.BaseTableName;     
-                row["BaseColumnName"]=info.BaseColumnName;     
-                row["AutoIncrementSeed"]=info.AutoIncrementSeed;
-                row["AutoIncrementStep"]=info.AutoIncrementStep;
-                row["DefaultValue"]=info.DefaultValue;           
-                row["Expression"]=info.Expression;              
+                row["BaseCatalogName"]=info.BaseCatalogName ?? (object?)DBNull.Value; 
+                row["BaseSchemaName"]=info.BaseSchemaName ?? (object?)DBNull.Value; 
+                row["BaseTableName"]=info.BaseTableName ?? (object?)DBNull.Value;     
+                row["BaseColumnName"]=info.BaseColumnName ?? (object?)DBNull.Value;     
+                row["AutoIncrementSeed"]=info.AutoIncrementSeed ?? (object?)DBNull.Value;
+                row["AutoIncrementStep"]=info.AutoIncrementStep ?? (object?)DBNull.Value;
+                row["DefaultValue"]=info.DefaultValue ?? (object?)DBNull.Value;           
+                row["Expression"]=info.Expression ?? (object?)DBNull.Value;              
                 row["ColumnMapping"]=info.ColumnMapping;    
-                row["BaseTableNamespace"]=info.BaseTableNamespace;
-                row["BaseColumnNamespace"]=info.BaseColumnNamespace;
+                row["BaseTableNamespace"]=info.BaseTableNamespace ?? (object?)DBNull.Value;
+                row["BaseColumnNamespace"]=info.BaseColumnNamespace ?? (object?)DBNull.Value;
 
                 dt.Rows.Add(row);
             }
