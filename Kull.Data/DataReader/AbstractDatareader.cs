@@ -207,8 +207,8 @@ namespace Kull.Data.DataReader
             dt.Columns.Add(new DataColumn("ColumnName", typeof(string)));
             dt.Columns.Add(new DataColumn("ColumnOrdinal", typeof(int)));
             dt.Columns.Add(new DataColumn("ColumnSize", typeof(int)));
-            dt.Columns.Add(new DataColumn("NumericPrecision", typeof(int?)));
-            dt.Columns.Add(new DataColumn("NumericScale", typeof(int?)));
+            dt.Columns.Add(new DataColumn("NumericPrecision", typeof(int)));
+            dt.Columns.Add(new DataColumn("NumericScale", typeof(int)));
             dt.Columns.Add(new DataColumn("DataType", typeof(string)));
             dt.Columns.Add(new DataColumn("ProviderType", typeof(Type)));
             dt.Columns.Add(new DataColumn("IsLong", typeof(bool)));
