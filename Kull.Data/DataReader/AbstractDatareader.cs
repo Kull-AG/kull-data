@@ -181,10 +181,87 @@ namespace Kull.Data.DataReader
             return (long)GetValue(i);
         }
 
+        protected virtual SchemaDataTableInfo GetSchemaDataTableInfo(int i)
+        {
+
+            Type t = GetFieldType(i);
+            string name = GetName(i);
+            string dataTypeName = GetDataTypeName(i);
+            return new SchemaDataTableInfo(ColumnName: name, ColumnOrdinal: i, ColumnSize: -1,
+                NumericPrecision: null, NumericScale: null, DataType: dataTypeName, ProviderType: t, IsLong: true);
+
+        }
+
+        protected System.Collections.Generic.IEnumerable<SchemaDataTableInfo> GetSchemaDataTableInfo()
+        {
+            for(int i=0; i<this.FieldCount; i++)
+            {
+                yield return GetSchemaDataTableInfo(i);
+            }
+        }
 
         public override DataTable GetSchemaTable()
         {
-            throw new NotImplementedException();
+            //  see https://docs.microsoft.com/en-us/dotnet/api/system.data.datatablereader.getschematable?view=net-6.0#remarks
+            DataTable dt = new DataTable();
+            dt.Columns.Add(new DataColumn("ColumnName", typeof(string)));
+            dt.Columns.Add(new DataColumn("ColumnOrdinal", typeof(int)));
+            dt.Columns.Add(new DataColumn("ColumnSize", typeof(int)));
+            dt.Columns.Add(new DataColumn("NumericPrecision", typeof(int?)));
+            dt.Columns.Add(new DataColumn("NumericScale", typeof(int?)));
+            dt.Columns.Add(new DataColumn("DataType", typeof(string)));
+            dt.Columns.Add(new DataColumn("ProviderType", typeof(Type)));
+            dt.Columns.Add(new DataColumn("IsLong", typeof(bool)));
+            dt.Columns.Add(new DataColumn("AllowDBNull", typeof(bool)));
+            dt.Columns.Add(new DataColumn("IsReadOnly", typeof(bool)));
+            dt.Columns.Add(new DataColumn("IsRowVersion", typeof(bool)));
+            dt.Columns.Add(new DataColumn("IsUnique", typeof(bool)));
+            dt.Columns.Add(new DataColumn("IsKey", typeof(bool)));
+            dt.Columns.Add(new DataColumn("IsAutoIncrement", typeof(bool)));
+            dt.Columns.Add(new DataColumn("BaseCatalogName", typeof(string)));
+            dt.Columns.Add(new DataColumn("BaseSchemaName", typeof(string)));
+            dt.Columns.Add(new DataColumn("BaseTableName", typeof(string)));
+            dt.Columns.Add(new DataColumn("BaseColumnName", typeof(string)));
+            dt.Columns.Add(new DataColumn("AutoIncrementSeed", typeof(int)));
+            dt.Columns.Add(new DataColumn("AutoIncrementStep", typeof(int)));
+            dt.Columns.Add(new DataColumn("DefaultValue", typeof(string)));
+            dt.Columns.Add(new DataColumn("Expression", typeof(string)));
+            dt.Columns.Add(new DataColumn("ColumnMapping", typeof(MappingType)));
+            dt.Columns.Add(new DataColumn("BaseTableNamespace", typeof(string)));
+            dt.Columns.Add(new DataColumn("BaseColumnNamespace", typeof(string)));
+            var infos = GetSchemaDataTableInfo();
+            foreach (var info in infos)
+            {
+                var row = dt.NewRow();
+                row["ColumnName"]=info.ColumnName;                
+                row["ColumnOrdinal"]=info.ColumnOrdinal;
+                row["ColumnSize"]=info.ColumnSize;        
+                row["NumericPrecision"]=info.NumericPrecision;  
+                row["NumericScale"]=info.NumericScale;         
+                row["DataType"]=info.DataType;          
+                row["ProviderType"]=info.ProviderType;        
+                row["IsLong"]=info.IsLong;           
+                row["AllowDBNull"]=info.AllowDBNull;  
+                row["IsReadOnly"]=info.IsReadOnly;      
+                row["IsRowVersion"]=info.IsRowVersion;      
+                row["IsUnique"]=info.IsUnique;              
+                row["IsKey"]=info.IsKey;             
+                row["IsAutoIncrement"]=info.IsAutoIncrement;  
+                row["BaseCatalogName"]=info.BaseCatalogName; 
+                row["BaseSchemaName"]=info.BaseSchemaName; 
+                row["BaseTableName"]=info.BaseTableName;     
+                row["BaseColumnName"]=info.BaseColumnName;     
+                row["AutoIncrementSeed"]=info.AutoIncrementSeed;
+                row["AutoIncrementStep"]=info.AutoIncrementStep;
+                row["DefaultValue"]=info.DefaultValue;           
+                row["Expression"]=info.Expression;              
+                row["ColumnMapping"]=info.ColumnMapping;    
+                row["BaseTableNamespace"]=info.BaseTableNamespace;
+                row["BaseColumnNamespace"]=info.BaseColumnNamespace;
+
+                dt.Rows.Add(row);
+            }
+            return dt;
         }
 
         public override string GetString(int i)
