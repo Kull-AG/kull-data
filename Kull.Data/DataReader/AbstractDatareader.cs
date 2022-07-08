@@ -150,6 +150,7 @@ namespace Kull.Data.DataReader
 
         public override Type GetFieldType(int i)
         {
+            if (!this.HasRows) return typeof(int);
             var vl = GetValue(i);
             if (vl == null)
                 return typeof(DBNull);
@@ -186,7 +187,6 @@ namespace Kull.Data.DataReader
 
             Type t = GetFieldType(i);
             string name = GetName(i);
-            string dataTypeName = GetDataTypeName(i);
             return new SchemaDataTableInfo(ColumnName: name, ColumnOrdinal: i, ColumnSize: -1,
                 NumericPrecision: null, NumericScale: null, DataType: t,  IsLong: true);
 
