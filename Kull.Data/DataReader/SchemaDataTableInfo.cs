@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 namespace Kull.Data.DataReader
 {
     public record SchemaDataTableInfo(string ColumnName, 
-        int ColumnOrdinal, int ColumnSize, int? NumericPrecision, int? NumericScale,
-        string DataType,
-        object ProviderType ,
+        int ColumnOrdinal, int ColumnSize, Int16? NumericPrecision, Int16? NumericScale,
+        Type DataType,
         bool IsLong=true,
         bool AllowDBNull=true,
         bool IsReadOnly=false,

@@ -188,7 +188,7 @@ namespace Kull.Data.DataReader
             string name = GetName(i);
             string dataTypeName = GetDataTypeName(i);
             return new SchemaDataTableInfo(ColumnName: name, ColumnOrdinal: i, ColumnSize: -1,
-                NumericPrecision: null, NumericScale: null, DataType: dataTypeName, ProviderType: t, IsLong: true);
+                NumericPrecision: null, NumericScale: null, DataType: t,  IsLong: true);
 
         }
 
@@ -207,10 +207,9 @@ namespace Kull.Data.DataReader
             dt.Columns.Add(new DataColumn("ColumnName", typeof(string)));
             dt.Columns.Add(new DataColumn("ColumnOrdinal", typeof(int)));
             dt.Columns.Add(new DataColumn("ColumnSize", typeof(int)));
-            dt.Columns.Add(new DataColumn("NumericPrecision", typeof(int)));
-            dt.Columns.Add(new DataColumn("NumericScale", typeof(int)));
-            dt.Columns.Add(new DataColumn("DataType", typeof(string)));
-            dt.Columns.Add(new DataColumn("ProviderType", typeof(Type)));
+            dt.Columns.Add(new DataColumn("NumericPrecision", typeof(Int16)));
+            dt.Columns.Add(new DataColumn("NumericScale", typeof(Int16)));
+            dt.Columns.Add(new DataColumn("DataType", typeof(Type)));
             dt.Columns.Add(new DataColumn("IsLong", typeof(bool)));
             dt.Columns.Add(new DataColumn("AllowDBNull", typeof(bool)));
             dt.Columns.Add(new DataColumn("IsReadOnly", typeof(bool)));
@@ -238,8 +237,7 @@ namespace Kull.Data.DataReader
                 row["ColumnSize"]=info.ColumnSize;        
                 row["NumericPrecision"]=info.NumericPrecision ?? (object?)DBNull.Value;  
                 row["NumericScale"]=info.NumericScale ?? (object?)DBNull.Value;         
-                row["DataType"]=info.DataType ?? (object?)DBNull.Value;          
-                row["ProviderType"]=info.ProviderType ?? (object?)DBNull.Value;        
+                row["DataType"]=info.DataType ?? (object?)DBNull.Value;           
                 row["IsLong"]=info.IsLong;           
                 row["AllowDBNull"]=info.AllowDBNull;  
                 row["IsReadOnly"]=info.IsReadOnly;      

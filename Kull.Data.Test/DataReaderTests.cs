@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using System.Linq;
+using System.Data.Common;
 
 namespace Kull.Data.Test
 {
@@ -50,7 +52,7 @@ namespace Kull.Data.Test
             while (odr1.Read())
             {
                 Assert.AreEqual(fieldCount, odr1.FieldCount);
-                
+
             }
         }
 
@@ -62,6 +64,30 @@ namespace Kull.Data.Test
             var odr1 = new Kull.Data.DataReader.ObjectDataReader(dt);
             var dtscdt = odr1.GetSchemaTable();
             Assert.AreEqual(dtscdt.Rows.Count, dt.Count);
+
+            var sqldr = new Microsoft.Data.SqlClient.SqlConnection("Server=(localdb)\\MSSQLLocalDB;Integrated Security=True");
+            sqldr.AssureOpen();
+            var cmd = sqldr.CreateCommand("SELECT*FROM sys.databases");
+            var rdr = cmd.ExecuteReader();
+            var sqlscdt = rdr.GetSchemaTable();
+
+            var colssql = sqlscdt.Columns.Cast<System.Data.DataColumn>().Select(c => (c.ColumnName, c.DataType))
+                                .ToArray();
+
+            var colsdtscdt = dtscdt.Columns.Cast<System.Data.DataColumn>().Select(c => (c.ColumnName, c.DataType)).ToArray();
+            var colssqlfilt = colssql.Where(c => colsdtscdt.Select(sc => sc.ColumnName).Contains(c.ColumnName, StringComparer.InvariantCultureIgnoreCase))
+                    .OrderBy(s => s.ColumnName).ToList();
+            var colsdtscdtfilt = colsdtscdt.Where(c => colssqlfilt.Select(sc => sc.ColumnName)
+                .Contains(c.ColumnName, StringComparer.InvariantCultureIgnoreCase))
+                .OrderBy(s => s.ColumnName).ToList();
+            var enum1 = colssqlfilt.GetEnumerator();
+            var enum2 = colsdtscdtfilt.GetEnumerator();
+            while (enum1.MoveNext())
+            {
+                Assert.IsTrue(enum2.MoveNext());
+                Assert.AreEqual(enum1.Current.ColumnName, enum2.Current.ColumnName);
+                Assert.AreEqual(enum1.Current.DataType, enum2.Current.DataType);
+            }
         }
 
         [TestMethod]
