@@ -9,7 +9,7 @@ namespace Kull.Data
     /// A helper class for creating a tablename. This is used to store the DefaultSchema as well (which should not be hard-coded)
     /// </summary>
     [System.Diagnostics.Contracts.Pure]
-    public class DBObjectName : IComparable
+    public class DBObjectName : IComparable, IEquatable<DBObjectName>
     {
 
         private readonly string? dbName;
@@ -141,6 +141,18 @@ namespace Kull.Data
                 return obj2.DataBaseName == this.DataBaseName && obj2.Schema == this.Schema && obj2.Name == this.Name;
             }
             return base.Equals(obj);
+        }
+
+        public bool Equals(DBObjectName obj2)
+        {
+            return obj2.DataBaseName == this.DataBaseName && obj2.Schema == this.Schema && obj2.Name == this.Name;
+        }
+
+        public bool Equals(DBObjectName obj2, bool includeDatabase, StringComparison caseSensivity)
+        {
+            if (includeDatabase && !string.Equals(obj2.DataBaseName, this.DataBaseName, caseSensivity))
+                return false;
+            return string.Equals(obj2.Schema, this.Schema, caseSensivity) && string.Equals(obj2.Name, this.Name, caseSensivity);
         }
 
         /// <summary>
