@@ -29,7 +29,8 @@
 		<Deterministic>true</Deterministic>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<Nullable>enable</Nullable>
-		<PackageReadmeFile>README.md</PackageReadmeFile>	
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsTrimmable>True</IsTrimmable>
 	</PropertyGroup>
 
 	<ItemGroup>

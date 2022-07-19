@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using dt = System.Data;
 using dba = System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 #if NETSTD || NETCOREAPP
 using Microsoft.Extensions.Configuration;
 #endif
@@ -139,6 +140,9 @@ namespace Kull.Data
         /// <param name="cmd"></param>
         /// <returns></returns>
         [Obsolete("Use DbDataReader instead")]
+#if NET6_0_OR_GREATER
+        [RequiresUnreferencedCode("Members from types used in the expression column to be trimmed if not referenced directly")]
+#endif
         public static async Task<dt.DataTable> ReadAsTableAsync(this DbCommand cmd)
         {
             if (cmd.Connection!.State == ConnectionState.Closed)

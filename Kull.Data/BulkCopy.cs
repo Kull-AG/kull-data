@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,7 +52,9 @@ namespace Kull.Data
 #pragma warning restore CA1034 // Nested types should not be visible
         {
         }
-
+#if NET6_0_OR_GREATER
+        [RequiresUnreferencedCode("Must somehow reference SqlBulkCopy/SqlBulkCopyOptions when using trimming and SQL Server")]
+#endif
         public static void BulkInsert(this DbConnection connection, DBObjectName destinationTable, DbDataReader source,
             BulkInsertOptions? options = null)
         {
