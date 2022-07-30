@@ -207,11 +207,11 @@ namespace Kull.Data
             }
             else if (parts.Count == 2)
             {
-                return new DBObjectName(parts[0], parts[1]);
+                return new DBObjectName(parts[0].Trim(), parts[1].Trim());
             }
             else if (parts.Count == 3)
             {
-                return new DBObjectName(parts[1], parts[2], parts[0]);
+                return new DBObjectName(parts[1].Trim(), parts[2].Trim(), db: parts[0].Trim());
             }
             else
             {
