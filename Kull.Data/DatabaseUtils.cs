@@ -622,7 +622,11 @@ namespace Kull.Data
                 .SetBasePath(System.IO.Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, false);
 
-
+            string env = Environment.GetEnvironmentVariable("ASPNETCORE_Environment");
+            if(env != null)
+            {
+                builder.AddJsonFile($"appsettings.{env}.json", true, false);
+            }
             var Configuration = builder.Build();
             var value = Configuration["ConnectionStrings:" + configName];
             if (!string.IsNullOrEmpty(value))
