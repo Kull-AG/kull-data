@@ -62,7 +62,7 @@ namespace Kull.Data.DataReader
             names = new string[baseReader.FieldCount + additionalColumns.Length];
 
             bool supportsNames = true;
-            if (names.Length > 0)
+            if (baseReader.FieldCount > 0)
             { // Not nice, but the only method
                 try { baseReader.GetName(0); }
                 catch (NotSupportedException)
