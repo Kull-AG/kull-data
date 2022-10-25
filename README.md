@@ -69,6 +69,9 @@ to a datareader, you can use `Kull.Data.DataReader.WrappedDataReader`.
 
 # Powershell Module
 
+At first, I do not recommend Powershell for such stuff at all because of the following issue: https://github.com/PowerShell/PowerShellGet/issues/381
+Prefer doing such stuff in C# directly. If you really want to, you can still use this Powershell module.
+
 You can use the Kull.Data.Powershell Module to use some simple cmdlets that allow for querying stored procedures(queries with parameters easily.
 
 ```powershell
