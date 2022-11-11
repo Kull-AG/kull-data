@@ -11,10 +11,35 @@ namespace Kull.Data.DataReader
     /// </summary>
 #pragma warning disable CA1010 // Collections should implement generic interface
 #pragma warning disable CA1710 // Identifiers should have correct suffix
-    public abstract class AbstractDatareader: System.Data.Common.DbDataReader
+    public abstract class AbstractDatareader : System.Data.Common.DbDataReader
 #pragma warning restore CA1710 // Identifiers should have correct suffix
 #pragma warning restore CA1010 // Collections should implement generic interface
     {
+
+        /// <summary>
+        /// Nr of records updated. We assume zero as this is for reading
+        /// </summary>
+
+        public override int RecordsAffected => 0;
+
+
+        protected bool _isClosed = false;
+
+        /// <summary>
+        /// True if has been closed
+        /// </summary>
+        public override bool IsClosed => _isClosed;
+
+        /// <summary>
+        /// The depth, is usually 0
+        /// </summary>
+        public override int Depth => 0;
+
+        /// <summary>
+        /// We assume only one dataset. You can still overwrite, if you want
+        /// </summary>
+        /// <returns></returns>
+        public override bool NextResult() => false;
 
         /// <summary>
         /// Gets a value
@@ -188,13 +213,13 @@ namespace Kull.Data.DataReader
             Type t = GetFieldType(i);
             string name = GetName(i);
             return new SchemaDataTableInfo(ColumnName: name, ColumnOrdinal: i, ColumnSize: -1,
-                NumericPrecision: null, NumericScale: null, DataType: t,  IsLong: true);
+                NumericPrecision: null, NumericScale: null, DataType: t, IsLong: true);
 
         }
 
         protected System.Collections.Generic.IEnumerable<SchemaDataTableInfo> GetSchemaDataTableInfo()
         {
-            for(int i=0; i<this.FieldCount; i++)
+            for (int i = 0; i < this.FieldCount; i++)
             {
                 yield return GetSchemaDataTableInfo(i);
             }
@@ -232,30 +257,30 @@ namespace Kull.Data.DataReader
             foreach (var info in infos)
             {
                 var row = dt.NewRow();
-                row["ColumnName"]=info.ColumnName;                
-                row["ColumnOrdinal"]=info.ColumnOrdinal;
-                row["ColumnSize"]=info.ColumnSize;        
-                row["NumericPrecision"]=info.NumericPrecision ?? (object?)DBNull.Value;  
-                row["NumericScale"]=info.NumericScale ?? (object?)DBNull.Value;         
-                row["DataType"]=info.DataType ?? (object?)DBNull.Value;           
-                row["IsLong"]=info.IsLong;           
-                row["AllowDBNull"]=info.AllowDBNull;  
-                row["IsReadOnly"]=info.IsReadOnly;      
-                row["IsRowVersion"]=info.IsRowVersion;      
-                row["IsUnique"]=info.IsUnique;              
-                row["IsKey"]=info.IsKey;             
-                row["IsAutoIncrement"]=info.IsAutoIncrement;  
-                row["BaseCatalogName"]=info.BaseCatalogName ?? (object?)DBNull.Value; 
-                row["BaseSchemaName"]=info.BaseSchemaName ?? (object?)DBNull.Value; 
-                row["BaseTableName"]=info.BaseTableName ?? (object?)DBNull.Value;     
-                row["BaseColumnName"]=info.BaseColumnName ?? (object?)DBNull.Value;     
-                row["AutoIncrementSeed"]=info.AutoIncrementSeed ?? (object?)DBNull.Value;
-                row["AutoIncrementStep"]=info.AutoIncrementStep ?? (object?)DBNull.Value;
-                row["DefaultValue"]=info.DefaultValue ?? (object?)DBNull.Value;           
-                row["Expression"]=info.Expression ?? (object?)DBNull.Value;              
-                row["ColumnMapping"]=info.ColumnMapping;    
-                row["BaseTableNamespace"]=info.BaseTableNamespace ?? (object?)DBNull.Value;
-                row["BaseColumnNamespace"]=info.BaseColumnNamespace ?? (object?)DBNull.Value;
+                row["ColumnName"] = info.ColumnName;
+                row["ColumnOrdinal"] = info.ColumnOrdinal;
+                row["ColumnSize"] = info.ColumnSize;
+                row["NumericPrecision"] = info.NumericPrecision ?? (object?)DBNull.Value;
+                row["NumericScale"] = info.NumericScale ?? (object?)DBNull.Value;
+                row["DataType"] = info.DataType ?? (object?)DBNull.Value;
+                row["IsLong"] = info.IsLong;
+                row["AllowDBNull"] = info.AllowDBNull;
+                row["IsReadOnly"] = info.IsReadOnly;
+                row["IsRowVersion"] = info.IsRowVersion;
+                row["IsUnique"] = info.IsUnique;
+                row["IsKey"] = info.IsKey;
+                row["IsAutoIncrement"] = info.IsAutoIncrement;
+                row["BaseCatalogName"] = info.BaseCatalogName ?? (object?)DBNull.Value;
+                row["BaseSchemaName"] = info.BaseSchemaName ?? (object?)DBNull.Value;
+                row["BaseTableName"] = info.BaseTableName ?? (object?)DBNull.Value;
+                row["BaseColumnName"] = info.BaseColumnName ?? (object?)DBNull.Value;
+                row["AutoIncrementSeed"] = info.AutoIncrementSeed ?? (object?)DBNull.Value;
+                row["AutoIncrementStep"] = info.AutoIncrementStep ?? (object?)DBNull.Value;
+                row["DefaultValue"] = info.DefaultValue ?? (object?)DBNull.Value;
+                row["Expression"] = info.Expression ?? (object?)DBNull.Value;
+                row["ColumnMapping"] = info.ColumnMapping;
+                row["BaseTableNamespace"] = info.BaseTableNamespace ?? (object?)DBNull.Value;
+                row["BaseColumnNamespace"] = info.BaseColumnNamespace ?? (object?)DBNull.Value;
 
                 dt.Rows.Add(row);
             }
@@ -291,6 +316,11 @@ namespace Kull.Data.DataReader
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(this.NextResult());
+        }
+
+        public override void Close()
+        {
+            this._isClosed = true;
         }
     }
 }

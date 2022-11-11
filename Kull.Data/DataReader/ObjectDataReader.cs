@@ -19,7 +19,6 @@ namespace Kull.Data.DataReader
     {
         private readonly IEnumerator<IReadOnlyDictionary<string, object?>> baseValues;
         private readonly string[] names;
-        private bool isClosed = false;
         private readonly Type[]? types;
         private bool? firstRead = null;
 
@@ -135,29 +134,24 @@ namespace Kull.Data.DataReader
             }
         }
 
-        public override int Depth => 0;
-
-        public override bool IsClosed => isClosed;
-
-        public override int RecordsAffected => 0;
 
         public override int FieldCount => names.Length;
 
         public override void Close()
         {
-            if (!isClosed)
+            if (!_isClosed)
             {
                 baseValues.Dispose();
-                isClosed = true;
             }
+            base.Close();
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (!isClosed)
+            if (!_isClosed)
             {
                 baseValues.Dispose();
-                isClosed = true;
+                _isClosed = true;
             }
         }
 

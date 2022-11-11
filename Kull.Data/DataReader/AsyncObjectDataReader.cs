@@ -20,7 +20,6 @@ namespace Kull.Data.DataReader
     {
         private readonly IAsyncEnumerator<IReadOnlyDictionary<string, object?>> baseValues;
         private string[]? names;
-        private bool isClosed = false;
         private Type[]? types;
         private bool? firstRead = null;
 
@@ -87,12 +86,6 @@ namespace Kull.Data.DataReader
             }
         }
 
-        public override int Depth => 0;
-
-        public override bool IsClosed => isClosed;
-
-        public override int RecordsAffected => 0;
-
         public override int FieldCount
         {
             get
@@ -106,10 +99,10 @@ namespace Kull.Data.DataReader
 
         public override Task CloseAsync()
         {
-            if (!isClosed)
+            if (!_isClosed)
             {
                 var t = baseValues.DisposeAsync();
-                isClosed = true;
+                _isClosed = true;
                 return t.AsTask();
             }
             return Task.CompletedTask;
@@ -117,10 +110,10 @@ namespace Kull.Data.DataReader
 
         public override ValueTask DisposeAsync()
         {
-            if (!isClosed)
+            if (!_isClosed)
             {
                 var t = baseValues.DisposeAsync();
-                isClosed = true;
+                _isClosed = true;
                 return t;
             }
             return default;
