@@ -59,27 +59,29 @@ namespace Kull.Data
             catch (System.TimeZoneNotFoundException)
             {
                 var sysTimeZones = System.TimeZoneInfo.GetSystemTimeZones();
+                var utcOffset = value.StartsWith("(UTC") ? TimeSpan.Parse(value.Substring("(UTC+".Length-1, "+01:00".Length).Replace("+", "")) : (TimeSpan?)null;
+                var towns = value.Contains(" ") ? value.Substring(value.IndexOf(" ")).Split(',').Select(s => s.Trim()).ToArray() : Array.Empty<string>();
                 foreach (var st in sysTimeZones)
                 {
                     if (st.DisplayName.Equals(value.Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
                         return st;
                     }
-                }
-                //(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna
-                foreach (var st2 in sysTimeZones)
-                {
-                    int utcOffSetDisplayIndex = st2.DisplayName.IndexOf(")");
-                    if (utcOffSetDisplayIndex > 0)
+                    if (System.Environment.OSVersion.Platform == PlatformID.Unix && st.Id.Contains("/"))
                     {
-                        if (st2.DisplayName.Substring(0, utcOffSetDisplayIndex) == value.Substring(0, utcOffSetDisplayIndex))
+                        var ianaTown = st.Id.Split('/')[1];
+                        if (st.BaseUtcOffset == utcOffset && towns.Contains(ianaTown, StringComparer.OrdinalIgnoreCase))
                         {
-                            string[] towns1 = st2.DisplayName.Substring(utcOffSetDisplayIndex + 1).Trim().Split(',').Select(s => s.Trim()).ToArray();
-                            string[] towns2 = value.Substring(utcOffSetDisplayIndex + 1).Trim().Split(',').Select(s => s.Trim()).ToArray();
-                            if (towns1.Any(t => towns2.Contains(t)))
-                            {
-                                return st2;
-                            }
+                            return st;
+                        }
+                    }
+                    else
+                    {
+                        int utcOffSetDisplayIndex = st.DisplayName.IndexOf(")");
+                        string[] towns1 = st.DisplayName.Substring(utcOffSetDisplayIndex + 1).Trim().Split(',').Select(s => s.Trim()).ToArray();
+                        if (st.BaseUtcOffset == utcOffset && towns1.Any(t => towns.Contains(t)))
+                        {
+                            return st;
                         }
                     }
                 }
