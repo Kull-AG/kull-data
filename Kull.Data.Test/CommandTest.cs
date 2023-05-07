@@ -22,7 +22,7 @@ namespace Kull.Data.Test
         [TestMethod]
         public void TestTVPParamter()
         {
-            System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand();
+            Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand();
             cmd.AddTableValuedParameter("Tester", new TestData2[] { new TestData2("test1", null), new TestData2("test2", 2) }, "dbo.testernamer");
         }
 
