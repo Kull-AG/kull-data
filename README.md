@@ -93,3 +93,13 @@ $sqlcon = Connect-Database $connectionstring $provider
 Send-DbCommand $sqlcon $commandText $parameters ([System.Data.CommandType]::StoredProcedure)
 # Or, use Receive-DbData to get result list
 ```
+## Run Tests in Docker Container
+1. To create the image, execute the following command in the directory of the docker file 
+   ```shell
+   docker build . -t sqlserver_sqltoolsservice --no-cache 
+   ```
+2. To execute the docker container, use the following command 
+   ```shell
+   docker run -d -p 1433:1433 --name sqlserver sqlserver_sqltoolsservice 
+   ```
+3. Now you have a working SQL server for development and testing purpose. To run the test, connect to the container and navigate to the `Kull.Data.Test` and execute `dotnet test` 

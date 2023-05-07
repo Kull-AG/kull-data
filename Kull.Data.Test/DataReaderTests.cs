@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.Common;
+using Microsoft.Data.SqlClient;
 
 namespace Kull.Data.Test
 {
@@ -65,7 +66,16 @@ namespace Kull.Data.Test
             var dtscdt = odr1.GetSchemaTable();
             Assert.AreEqual(dtscdt.Rows.Count, dt.Count);
 
-            var sqldr = new Microsoft.Data.SqlClient.SqlConnection("Server=(localdb)\\MSSQLLocalDB;Integrated Security=True");
+            SqlConnection sqldr;
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                sqldr = new Microsoft.Data.SqlClient.SqlConnection("Server=localhost;User ID=sa;Password=abcDEF123#;Integrated Security=false;TrustServerCertificate=true");
+            }
+            else
+            {
+                sqldr = new Microsoft.Data.SqlClient.SqlConnection("Server=(localdb)\\MSSQLLocalDB;Integrated Security=True");
+            }
+
             sqldr.AssureOpen();
             var cmd = sqldr.CreateCommand("SELECT*FROM sys.databases");
             var rdr = cmd.ExecuteReader();
