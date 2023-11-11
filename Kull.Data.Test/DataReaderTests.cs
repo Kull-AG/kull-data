@@ -69,7 +69,7 @@ namespace Kull.Data.Test
             SqlConnection sqldr;
             if (Environment.OSVersion.Platform == PlatformID.Unix)
             {
-                sqldr = new Microsoft.Data.SqlClient.SqlConnection("Server=localhost;User ID=sa;Password=abcDEF123#;Integrated Security=false;TrustServerCertificate=true");
+                sqldr = new Microsoft.Data.SqlClient.SqlConnection("Server=sql-server-test,1433;User ID=sa;Password=abcDEF123#;Integrated Security=false;TrustServerCertificate=true");
             }
             else
             {
